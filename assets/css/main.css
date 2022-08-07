@@ -160,7 +160,7 @@ input, select, textarea {
 
 		a:hover {
 			border-bottom-color: transparent;
-			color: #9bf1ff !important;
+			color: #d65e5ef2 !important;
 		}
 
 		a:active {
@@ -1796,7 +1796,7 @@ input, select, textarea {
 			font-weight: 600;
 			letter-spacing: 0.25em;
 			margin-bottom: 0;
-			text-transform: uppercase;
+			text-transform: lowercase;
 		}
 
 		body.is-ie header.major > :first-child:after {
@@ -3114,7 +3114,7 @@ input, select, textarea {
 		display: -webkit-flex;
 		display: -ms-flex;
 		display: flex;
-		background-color: #2a2f4a;
+		background-color: #414040;
 		box-shadow: 0 0 0.25em 0 rgba(0, 0, 0, 0.15);
 		cursor: default;
 		font-weight: 600;
@@ -3124,7 +3124,7 @@ input, select, textarea {
 		line-height: 3.25em;
 		margin: 0;
 		position: fixed;
-		text-transform: uppercase;
+		text-transform: lowercase;
 		top: 0;
 		width: 100%;
 		z-index: 10000;
@@ -3153,7 +3153,8 @@ input, select, textarea {
 			}
 
 			#header .logo:hover strong {
-				background-color: #9bf1ff;
+				background-color: #d65e5ef2;
+				color: #f1f2f7;
 			}
 
 			#header .logo:active strong {
@@ -3380,7 +3381,7 @@ input, select, textarea {
 		-webkit-align-items: center;
 		-ms-align-items: center;
 		align-items: center;
-		background-image: url("../../images/banner.jpg");
+		background-image: url("../../images/keyboard_1.jpg");
 		display: -moz-flex;
 		display: -webkit-flex;
 		display: -ms-flex;
@@ -3392,7 +3393,7 @@ input, select, textarea {
 		background-size: cover;
 		border-bottom: 0 !important;
 		cursor: default;
-		height: 60vh;
+		height: 100vh;
 		margin-bottom: -3.25em;
 		max-height: 32em;
 		min-height: 22em;
@@ -3410,12 +3411,12 @@ input, select, textarea {
 			-ms-transition-delay: 0.75s;
 			transition-delay: 0.75s;
 			pointer-events: none;
-			background-color: #242943;
+			background-color: #f8f9fd;
 			content: '';
 			display: block;
 			height: 100%;
 			left: 0;
-			opacity: 0.85;
+			opacity: 0.2;
 			position: absolute;
 			top: 0;
 			width: 100%;
