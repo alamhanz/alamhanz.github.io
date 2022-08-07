@@ -1,15 +1,7 @@
-# Alamhanz Github IO
-My Personal Branding Web
+# Personal Web
+My Personal Branding Web Testing
 
 ## Credits
 
-	Demo Images:
-		Unsplash (unsplash.com)
-
-	Icons:
-		Font Awesome (fontawesome.io)
-
-	Other:
-		jQuery (jquery.com)
-		Scrollex (github.com/ajlkn/jquery.scrollex)
-		Responsive Tools (github.com/ajlkn/responsive-tools)
+* [Forty Template](https://html5up.net/forty)
+* [Sharan article](https://medium.com/towards-data-science/how-to-create-a-stunning-personal-portfolio-website-for-free-50ec15b059dd)

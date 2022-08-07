@@ -30,3 +30,7 @@ Credits:
 		jQuery (jquery.com)
 		Scrollex (github.com/ajlkn/jquery.scrollex)
 		Responsive Tools (github.com/ajlkn/responsive-tools)
+
+
+source 
+https://www.youtube.com/watch?v=o1Go-2xv2JU&ab_channel=BrandonDonnelson
