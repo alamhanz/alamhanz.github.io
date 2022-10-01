@@ -1,75 +1,137 @@
-<!DOCTYPE HTML>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-	<title>alamhanz - home</title>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-	<link rel="stylesheet" href="assets/css/main.css" />
-	<noscript>
-		<link rel="stylesheet" href="assets/css/noscript.css" />
-	</noscript>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="click me. lets talk data." />
+  <meta property="og:site_name" content="alamsyah hanza">
+  <meta property="og:title" content="alamsyah hanza" />
+  <meta property="og:description" content="click me. lets talk data." />
+  <meta property="og:type" content="website" />
+
+  <meta name="msapplication-TileImage" content="https://storage.googleapis.com/alamhanz.xyz/images/hello3.jpg">
+  <meta property="og:image:secure_url" itemprop="image" content="https://storage.googleapis.com/alamhanz.xyz/images/hello3.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="300">
+  <meta property="og:image:height" content="300">
+  
+
+  <!-- Website to visit when clicked in fb or WhatsApp-->
+  <meta property="og:url" content="https://alamhanz.xyz">
+  <meta property="og:updated_time" content="1662850842" />
+
+  <title>alamhanz hanza</title>
+  <link rel="icon" type="image/x-icon" href="/images/just_staging.ico">
+  <link rel="stylesheet" href="tailwind.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://kit.fontawesome.com/38bde595d0.js" crossorigin="anonymous"></script>
+
 </head>
 
-<body class="is-preload">
-	<div id="wrapper">
+<body class="bg-body text-theme font-poppins pb-0">
+  <div class="bg-cover min-h-screen bg-fixed" style="background-image:linear-gradient(rgba(238, 232, 232, 0.514), rgba(254, 253, 255, 0.941)), 
+                                                    url('images/keyboard_1.jpg')">
 
-		<!-- Header -->
-		<header id="header" class="alt">
-			<a href="index.html" class="logo"><strong>Alamsyah</strong> <span>Hanza</span></a>
-			<nav>
-				<!-- <a href="#menu">Menu</a> -->
-				<a href="https://alamhanz.medium.com/">Blog</a>
-				<a href="generic.html">About</a>
-				<a href="generic.html">Resume</a>
-			</nav>
-		</header>
+    <header class="py-5 md:py-3">
+    <!-- <footer class="p-4 bg-white shadow md:flex md:items-center md:justify-between md:p-6 dark:bg-gray-800"> -->
+      <div class="container flex justify-between items-center mx-auto w-full px-5 md:px-24 2xl:px-7">
+      <!-- <div class="mx-10 items-center md:flex md:items-center md:justify-between md:p-6"> -->
 
-		<!-- Banner -->
-		<section id="banner" class="major">
-			<div class="inner">
-				<header class="major">
-					<h1>Hello, Alamsyah Here</h1>
-				</header>
-				<div class="content">
-					<p>Welcome to my personal page.<br />
-						I'm a data scientist. If you have a usecase.
-						<a href="mailto:alamhanz@gmail.com">Lets Talk.</a>
-					
-					</p>
-				</div>
+        <div class="text-xl 2xl:text-2xl tracking-widest">
+          <a  href="/">
+            <button class="px-2 py-1 tracking-widest bg-theme text-selected-text hover:text-body hover:bg-selected-text">alamsyah</button>
+            <span>hanza</span>
+          </a>
+        </div>
 
-				<ul class="icons">
-					<li><a href="https://github.com/alamhanz" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
-					<li><a href="https://twitter.com/AlamHanz" class="icon brands alt fa-twitter"><span class="label">Twitter</span></a></li>
-					<li><a href="#" class="icon brands alt fa-facebook-f"><span class="label">Facebook</span></a></li>
-					<li><a href="https://id.linkedin.com/in/alamhanz" class="icon brands alt fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
-					<li><a href="https:" class="icon brands alt fa-discord"><span class="label">LinkedIn</span></a></li>
-				</ul>
-			</div>
-		</section>
+        <button id="toggle" class="md:hidden">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM9 15a1 1 0 011-1h6a1 1 0 110 2h-6a1 1 0 01-1-1z"
+              clip-rule="evenodd" />
+          </svg>
+        </button>
 
-		<!-- Footer -->
-		<footer id="footer">
-			<div class="inner">
-				<ul class="copyright">
-					<li>&copy; alamhanz 2022</li>
-					<!-- <li>Design: <a href="https://html5up.net">HTML5 UP</a></li> -->
-				</ul>
-			</div>
-		</footer>
+        <nav id="nav" class="fixed py-8 top-12 bottom-0 -right-full w-20 md:w-auto md:static transition-all text-sm md:text-xl 2xl:text-2xl">
+        <!-- <nav id="nav" class="fixed py-8 top-12 bottom-0 w-40 md:w-auto md:static transition-all"> -->
+          <ul class="md:flex">
+            <li>
+              <a class="block p-3 hover:text-selected-text tracking-widest" href="/">home</a>
+            </li>
+            <li>
+              <a class="block p-3 hover:text-selected-text tracking-widest" href="about.html">about</a>
+            </li>
+            <li>
+              <a class="block p-3 hover:text-selected-text tracking-widest" href="https://alamhanz.medium.com/">blog</a>
+            </li>
+            <li>
+              <a class="block p-3 text-selected-text hover:underline tracking-widest" href="https://drive.google.com/file/d/1iInua-R5s6FYtPlbkYTbgOS1z5h3rErk/view?usp=sharing">CV</a>
+            </li>
+          </ul>
+        </nav>
 
-	</div>
 
-	
-	<!-- Scripts -->
-	<script src="assets/js/jquery.min.js"></script>
-	<script src="assets/js/jquery.scrolly.min.js"></script>
-	<script src="assets/js/jquery.scrollex.min.js"></script>
-	<script src="assets/js/browser.min.js"></script>
-	<script src="assets/js/breakpoints.min.js"></script>
-	<script src="assets/js/util.js"></script>
-	<script src="assets/js/main.js"></script>
+      </div>
+
+      <script type="text/javascript" src="navi-pilot.js"></script>
+    </header>
+
+    <div class="container mt-3 justify-between items-center mx-auto px-2 md:px-3 lg:px-15 w-full">
+      <div class="pt-28 md:pt-20 2xl:pt-44 pb-30 md:pb-44 px-5 md:px-24 2xl:px-7">
+
+        <h1
+          class="font-bold text-5xl md:text-6xl 2xl:text-7xl text-center md:text-left inline-block md:py-5 2xl:py-8 leading-tight border-b w-full border-red-600">
+          Hello, Alamsyah Here.
+        </h1>
+
+        <div class="py-5 md:py-9 text-left text-lg md:text-2xl 2xl:text-3xl">
+          <p>Welcome to my personal page.<br />
+            I'm a data scientist. If you have a usecase.
+            <a class="underline hover:text-selected-text text-blue-800" href="mailto:alamhanz@gmail.com">Lets Talk.</a>
+          </p>
+        </div>
+
+        <div>
+          <ul class="flex justify-center md:justify-start md:flex space-x-3 md:space-x-5 py-7 md:py-3">
+
+            <li><a href="https://github.com/alamhanz"><button type="button"
+                class="w-10 md:w-12 h-10 md:h-12 rounded-full bg-white hover:bg-selected-text text-theme text-sm mr-2 mb-2">
+                <i class="fa-brands fa-github fa-xl"></i></button></a></li>
+
+            <li><a href="https://alamhanz.medium.com/"><button type="button"
+              class="w-10 md:w-12 h-10 md:h-12 rounded-full bg-white hover:bg-selected-text text-theme text-sm mr-2 mb-2">
+              <i class="fa-brands fa-medium fa-xl"></i></button></a></li>
+
+            <li><a href="https://www.linkedin.com/in/alamhanz//"><button type="button"
+              class="w-10 md:w-12 h-10 md:h-12 rounded-full bg-white hover:bg-selected-text text-theme text-sm mr-2 mb-2">
+              <i class="fa-brands fa-linkedin fa-xl"></i></button></a></li>
+
+            <li><a href="https://twitter.com/AlamHanz"><button type="button"
+              class="w-10 md:w-12 h-10 md:h-12 rounded-full bg-white hover:bg-selected-text text-theme text-sm mr-2 mb-2">
+              <i class="fa-brands fa-twitter fa-xl"></i></button></a></li>
+            
+            <li><a href="https://discord.com/users/759762745255526441"><button type="button"
+              class="w-10 md:w-12 h-10 md:h-12 rounded-full bg-white hover:bg-selected-text text-theme text-sm mr-2 mb-2">
+              <i class="fa-brands fa-discord fa-xl"></i></button></a></li>
+
+          </ul>
+        </div>
+
+      </div>
+      <script src="https://cdn.tailwindcss.com"></script>
+    </div>
+
+  </div>
+  <footer class="p-4 bg-white shadow md:flex md:items-center md:justify-between md:p-6 dark:bg-gray-800">
+    <span class="text-sm text-gray-500 sm:text-center dark:text-gray-400">© alamhanz. All Rights Reserved.
+    </span>
+  </footer>
 
 </body>
+
 </html>

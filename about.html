@@ -1,64 +1,178 @@
-<!DOCTYPE HTML>
-<html>
-	<head>
-		<title>alamhanz - about</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="assets/css/main.css" />
-		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
-	</head>
-	<body class="is-preload">
+<!DOCTYPE html>
+<html lang="en">
 
-		<!-- Wrapper -->
-			<div id="wrapper">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="click me. lets talk data." />
+  <meta property="og:site_name" content="alamsyah hanza">
+  <meta property="og:title" content="alamsyah hanza" />
+  <meta property="og:description" content="click me. lets talk data." />
+  <meta property="og:type" content="website" />
 
-				<!-- Header -->
-				<header id="header" class="alt">
-					<a href="index.html" class="logo"><strong>Alamsyah</strong> <span>Hanza</span></a>
-					<nav>
-						<!-- <a href="#menu">Menu</a> -->
-						<a href="https://alamhanz.medium.com/">Blog</a>
-					</nav>
-				</header>
+  <meta name="msapplication-TileImage" content="https://storage.googleapis.com/alamhanz.xyz/images/hello3.jpg">
+  <meta property="og:image:secure_url" itemprop="image" content="https://storage.googleapis.com/alamhanz.xyz/images/hello3.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="300">
+  <meta property="og:image:height" content="300">
+  
 
-				<!-- Main -->
-				<div id="main" class="alt">
+  <!-- Website to visit when clicked in fb or WhatsApp-->
+  <meta property="og:url" content="https://alamhanz.xyz">
+  <meta property="og:updated_time" content="1662850842" />
 
-					<!-- One -->
-						<section id="one">
-							<div class="inner">
-								<header class="major">
-									<h1>Generic</h1>
-								</header>
-								<span class="image main"><img src="images/pic11.jpg" alt="" /></span>
-								<p>[WIP]</p>
-								<!-- <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis dapibus rutrum facilisis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Etiam tristique libero eu nibh porttitor fermentum. Nullam venenatis erat id vehicula viverra. Nunc ultrices eros ut ultricies condimentum. Mauris risus lacus, blandit sit amet venenatis non, bibendum vitae dolor. Nunc lorem mauris, fringilla in aliquam at, euismod in lectus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In non lorem sit amet elit placerat maximus. Pellentesque aliquam maximus risus, vel sed vehicula.</p>
-								<p>Interdum et malesuada fames ac ante ipsum primis in faucibus. Pellentesque venenatis dolor imperdiet dolor mattis sagittis. Praesent rutrum sem diam, vitae egestas enim auctor sit amet. Pellentesque leo mauris, consectetur id ipsum sit amet, fersapien risus, commodo eget turpis at, elementum convallis elit. Pellentesque enim turpis, hendrerit tristique lorem ipsum dolor.</p> -->
-							</div>
-						</section>
+  <title>alamhanz hanza</title>
+  <link rel="icon" type="image/x-icon" href="/images/just_staging.ico">
+  <link rel="stylesheet" href="tailwind.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
-				</div>
+  <script src="https://kit.fontawesome.com/38bde595d0.js" crossorigin="anonymous"></script>
 
-				<!-- Footer -->
-				<footer id="footer">
-					<div class="inner">
-						<ul class="copyright">
-							<li>&copy; alamhanz 2022</li>
-							<!-- <li>Design: <a href="https://html5up.net">HTML5 UP</a></li> -->
-						</ul>
-					</div>
-				</footer>
+</head>
 
-			</div>
+<body class="bg-body text-theme font-poppins pb-0">
+  <div class="bg-cover min-h-screen bg-fixed" style="background-image:linear-gradient(rgba(238, 232, 232, 0.514), rgba(254, 253, 255, 0.941)), 
+                                                    url('images/keyboard_1.jpg')">
 
-		<!-- Scripts -->
-			<script src="assets/js/jquery.min.js"></script>
-			<script src="assets/js/jquery.scrolly.min.js"></script>
-			<script src="assets/js/jquery.scrollex.min.js"></script>
-			<script src="assets/js/browser.min.js"></script>
-			<script src="assets/js/breakpoints.min.js"></script>
-			<script src="assets/js/util.js"></script>
-			<script src="assets/js/main.js"></script>
+    <header class="py-5 md:py-3">
+    <!-- <footer class="p-4 bg-white shadow md:flex md:items-center md:justify-between md:p-6 dark:bg-gray-800"> -->
+      <div class="container flex justify-between items-center mx-auto w-full px-5 md:px-24 2xl:px-7">
+      <!-- <div class="mx-10 items-center md:flex md:items-center md:justify-between md:p-6"> -->
 
-	</body>
+        <div class="text-xl 2xl:text-2xl tracking-widest">
+          <a  href="/">
+            <button class="px-2 py-1 tracking-widest bg-theme text-selected-text hover:text-body hover:bg-selected-text">alamsyah</button>
+            <span>hanza</span>
+          </a>
+        </div>
+
+        <button id="toggle" class="md:hidden">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM9 15a1 1 0 011-1h6a1 1 0 110 2h-6a1 1 0 01-1-1z"
+              clip-rule="evenodd" />
+          </svg>
+        </button>
+
+        <nav id="nav" class="fixed py-8 top-12 bottom-0 -right-full w-20 md:w-auto md:static transition-all text-sm md:text-xl 2xl:text-2xl">
+        <!-- <nav id="nav" class="fixed py-8 top-12 bottom-0 w-40 md:w-auto md:static transition-all"> -->
+          <ul class="md:flex">
+            <li>
+              <a class="block p-3 hover:text-selected-text tracking-widest" href="/">home</a>
+            </li>
+            <li>
+              <a class="block p-3 hover:text-selected-text tracking-widest" href="about.html">about</a>
+            </li>
+            <li>
+              <a class="block p-3 hover:text-selected-text tracking-widest" href="https://alamhanz.medium.com/">blog</a>
+            </li>
+            <li>
+              <a class="block p-3 text-selected-text hover:underline tracking-widest" href="https://drive.google.com/file/d/1iInua-R5s6FYtPlbkYTbgOS1z5h3rErk/view?usp=sharing">CV</a>
+            </li>
+          </ul>
+        </nav>
+
+
+      </div>
+
+      <script type="text/javascript" src="navi-pilot.js"></script>
+    </header>
+
+    <div class="container mt-3 justify-between items-center mx-auto px-2 md:px-3 lg:px-15 w-full">
+      <!-- <div class="py-16 pb-64"> -->
+        <div class="pt-24 md:pt-20 2xl:pt-30 pb-40 px-5 md:px-24 2xl:px-7">
+
+        <div class="px-3 md:px-28 2xl:px-20">
+          <div class="div top-0 right-0 pt-10">
+            <img class="h-20 md:h-28 rounded-full mb-10" src="images/face.jpg">
+          </div>
+          
+          <h1 class="font-bold text-2xl md:text-4xl 2xl:text-5xl mb-10">
+            About Me
+          </h1>
+
+          <div class="text-sm md:text-xl 2xl:text-2xl justify-evenly leading-relaxed">
+            My full name is Alamsyah Koto Hanza, I live in Indonesia. 
+            I've professional experience in Data Analytics and Data Science for more than 7 years. 
+            Currently, I am a data scientist at one of decacorn in Indonesia, while I also do part time as a 
+            learner, consultant, community advisor and mentor. I have passionate about getting insight from data in general 
+            and solving problems with it.
+          </div>
+
+          <h1 class="font-bold text-2xl md:text-4xl 2xl:text-5xl my-10">
+            Background
+          </h1>
+
+          <div class="text-sm md:text-xl 2xl:text-2xl justify-evenly leading-relaxed">
+            I've worked with Data since before my graduation from Mathematics of Universitas Indonesia. 
+            It has been 9 years I am learning statistics and programming to obtain information from Data. 
+            I've worked with different type of data from simple tabular data, XML, images and text. 
+            I understand developing and evaluating machine learning, automating reports, dashboarding, and some of ETL stack. 
+          </div>
+
+          <div class="text-sm md:text-xl 2xl:text-2xl justify-evenly leading-relaxed mt-6">
+            On the other hand, I'm joining and developing Data Science Indonesia Community since 2015. </br>
+            I voluntarily join the community to building up Data awareness ecosystem in Indonesia. 
+            I start with mentoring, building up the knowledge and sharing session.  
+          </div>
+
+          <div class="text-sm md:text-xl 2xl:text-2xl justify-evenly leading-relaxed mt-6">
+            In my journey, I have gain knowledges of tools for such analysis like excel, jupyter, 
+            docker, pandas and tensorflow. In dashboarding I usually operate Tableau or Google data studio. 
+            I code, mostly in Python and fluently in query (Bigquery, SQL or flink query).
+          </div>
+
+
+          <div>
+            <ul class="flex justify-center md:flex space-x-5 md:space-x-12 2xl:space-x-16 pt-16 md:pt-24 2xl:pt-32">
+
+              <li><a href="https://www.linkedin.com/in/alamhanz//">
+                <img src="images/jupyter-svgrepo-com.svg" alt="jupyter" width="40 md:60" height="40 md:60">
+              </a></li>
+  
+              <li><a href="https://www.linkedin.com/in/alamhanz//">
+                <img src="images/docker-icon-svgrepo-com.svg" alt="jupyter" width="40 md:60" height="40 md:60">
+              </a></li>
+
+              <li><a href="https://www.linkedin.com/in/alamhanz//">
+                <img src="images/Pandas_mark.svg" alt="jupyter" width="30 md:50" height="35 md:55">
+              </a></li>
+
+              <li><a href="https://www.linkedin.com/in/alamhanz//">
+                <img src="images/python-svgrepo-com.svg" alt="jupyter" width="40 md:60" height="40 md:60">
+              </a></li>
+
+              <li><a href="https://www.linkedin.com/in/alamhanz//">
+                <img src="images/tensorflow-svgrepo-com.svg" alt="jupyter" width="40 md:60" height="40 md:60">
+              </a></li>
+
+              <li><a href="https://www.linkedin.com/in/alamhanz//">
+                <img src="images/tableau-icon-svgrepo-com.svg" alt="jupyter" width="40 md:60" height="40 md:60">
+              </a></li>
+
+              <li><a href="https://www.linkedin.com/in/alamhanz//">
+                <img src="images/google-cloud-svgrepo-com.svg" alt="jupyter" width="40 md:60" height="40 md:60">
+              </a></li>
+            </ul>
+          </div>
+
+
+        </div>
+
+
+      </div>
+      <script src="https://cdn.tailwindcss.com"></script>
+    </div>
+
+  </div>
+  <footer class="p-4 bg-white shadow md:flex md:items-center md:justify-between md:p-6 dark:bg-gray-800">
+    <span class="text-sm text-gray-500 sm:text-center dark:text-gray-400">© alamhanz. All Rights Reserved.
+    </span>
+  </footer>
+
+</body>
+
 </html>
