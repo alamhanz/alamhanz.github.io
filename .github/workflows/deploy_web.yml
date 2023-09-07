@@ -41,10 +41,8 @@ jobs:
           mv -v lyceum.html lyceum
           rm gha-creds-*.json
 
-      - name: bucket check
+      - name: bucket upload
         run : |
-          cd ../to_upload
-          ls
-          gcloud info
-          echo "checking bucket .."
-          gcloud storage ls
+          cd ..
+          echo "upload to bucket .."
+          gcloud storage cp to_upload/* gs://alamhanz.xyz/
