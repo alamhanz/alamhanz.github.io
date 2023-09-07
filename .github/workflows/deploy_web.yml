@@ -18,7 +18,7 @@ jobs:
 
       - name: rename the files
         run : |
-          echo "rename"
+          echo "rename files"
           cd ../to_upload 
           mv -v about.html about
           mv -v blog.html blog
@@ -32,7 +32,7 @@ jobs:
       - id: 'auth'
         uses: 'google-github-actions/auth@v1'
         with:
-          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+          credentials_json: '${{ secrets.GCP_CRED}}'
 
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
@@ -40,4 +40,7 @@ jobs:
           version: '>= 363.0.0'
 
       - name: 'Use gcloud CLI'
-        run: 'gcloud info'
+        run: |
+          gcloud info
+          cd ..
+          ls
