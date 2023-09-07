@@ -25,6 +25,7 @@ jobs:
           rename blog.html blog
           rename cv.html cv
           rename lyceum.html lyceum
+          ls
 
   upload-gcp:
     runs-on: ubuntu-latest
