@@ -32,6 +32,7 @@ jobs:
       - name: rename the files
         run : |
           echo "rename files"
+          ls
           cd ../to_upload 
           mv -v about.html about
           mv -v blog.html blog
