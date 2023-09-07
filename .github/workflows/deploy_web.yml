@@ -43,6 +43,7 @@ jobs:
           mv -v blog.html blog
           mv -v cv.html cv
           mv -v lyceum.html lyceum
+          ls
           rm gha-creds-e62547d62c075f63.json
           ls
 
