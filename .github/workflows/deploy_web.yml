@@ -13,7 +13,6 @@ jobs:
       - name: move the files
         run : |
           echo "create folder - move all files to new folder"
-          pwd
           cd ..
           mkdir to_upload | mv -v alamhanz.github.io/* to_upload/          
 
