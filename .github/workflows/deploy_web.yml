@@ -1,9 +1,9 @@
 name: Personal Web Deployment
 
 on:
-  push:
-    tags:
-      - '*'
+   push:
+    branches:
+      - xyz
 
 jobs:
   move-rename:
