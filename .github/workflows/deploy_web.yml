@@ -45,4 +45,4 @@ jobs:
         run : |
           cd ..
           echo "upload to bucket .."
-          gcloud storage cp to_upload/* gs://alamhanz.xyz/
+          gcloud storage cp -r to_upload/* gs://alamhanz.xyz/
