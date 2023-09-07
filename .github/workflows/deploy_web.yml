@@ -9,7 +9,9 @@ jobs:
   move-rename:
     runs-on: ubuntu-latest
     steps:
+      - uses: 'actions/checkout@v3'
       - id: 'auth'
+        name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v1'
         with:
           credentials_json: '${{ secrets.GCP_CRED}}'
@@ -26,15 +28,22 @@ jobs:
       - name: move the files
         run : |
           echo "create folder - move all files to new folder"
+          ls
           cd ..
-          mkdir to_upload | cp -a alamhanz.github.io/* to_upload/          
+          ls
+          mkdir to_upload | cp -a alamhanz.github.io/* to_upload/ 
+          ls
+          cd to_upload
+          ls
+          cd ../..
+          ls   
 
       - name: rename the files
         run : |
           echo "rename files"
-          ls
           pwd
-          cd ../to_upload 
+          cd ..
+          ls
           mv -v about.html about
           mv -v blog.html blog
           mv -v cv.html cv
