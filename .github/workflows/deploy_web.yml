@@ -42,7 +42,7 @@ jobs:
           cd ..
           echo "upload to bucket .."
           gcloud storage cp -r to_upload/* gs://alamhanz.xyz/
-          gcloud storage objects update gs://alamhanz.xyz/about text/html
-          gcloud storage objects update gs://alamhanz.xyz/blog text/html
-          gcloud storage objects update gs://alamhanz.xyz/cv text/html
-          gcloud storage objects update gs://alamhanz.xyz/lyceum text/html
+          gcloud storage objects update gs://alamhanz.xyz/about --content-type=text/html
+          gcloud storage objects update gs://alamhanz.xyz/blog --content-type=text/html
+          gcloud storage objects update gs://alamhanz.xyz/cv --content-type=text/html
+          gcloud storage objects update gs://alamhanz.xyz/lyceum --content-type=text/html
