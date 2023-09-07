@@ -43,6 +43,8 @@ jobs:
 
       - name: bucket check
         run : |
+          cd ../to_upload
+          ls
           gcloud info
           echo "checking bucket .."
           gcloud storage ls
