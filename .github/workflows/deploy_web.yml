@@ -25,15 +25,11 @@ jobs:
         run : |
           echo "create folder - move all files to new folder"
           cd ..
-          mkdir to_upload | cp -a alamhanz.github.io/* to_upload/ 
-          ls
-          cd to_upload
-          ls
+          mkdir to_upload | cp -a alamhanz.github.io/* to_upload/
 
       - name: rename the files
         run : |
           echo "rename files"
-          pwd
           cd ../to_upload
           mv -v about.html about
           mv -v blog.html blog
