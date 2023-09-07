@@ -9,7 +9,20 @@ jobs:
   move-rename:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GCP_CRED}}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
+        with:
+          version: '>= 363.0.0'
+
+      - name: 'Use gcloud CLI'
+        run: |
+          gcloud info
+
       - name: move the files
         run : |
           echo "create folder - move all files to new folder"
@@ -26,21 +39,7 @@ jobs:
           mv -v lyceum.html lyceum
           ls
 
-  upload-gcp:
-    runs-on: ubuntu-latest
-    steps:
-      - id: 'auth'
-        uses: 'google-github-actions/auth@v1'
-        with:
-          credentials_json: '${{ secrets.GCP_CRED}}'
-
-      - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v1'
-        with:
-          version: '>= 363.0.0'
-
-      - name: 'Use gcloud CLI'
-        run: |
-          gcloud info
-          cd ..
-          ls
+      - name: rename the files
+        run : |
+          echo "rename files"
+          gcloud storage ls
