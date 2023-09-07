@@ -39,7 +39,7 @@ jobs:
           mv -v lyceum.html lyceum
           ls
 
-      - name: rename the files
+      - name: bucket check
         run : |
           echo "rename files"
           gcloud storage ls
