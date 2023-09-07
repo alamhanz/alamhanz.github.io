@@ -15,14 +15,16 @@ jobs:
           echo "create folder - move all files to new folder"
           pwd
           cd ..
-          mkdir to_upload | mv -v alamhanz.github.io/* to_upload/
-          cd to_upload 
-          ls
+          mkdir to_upload | mv -v alamhanz.github.io/* to_upload/          
 
       - name: rename the files
         run : |
           echo "rename"
-          pwd
+          cd ../to_upload 
+          rename about.html about
+          rename blog.html blog
+          rename cv.html cv
+          rename lyceum.html lyceum
 
   upload-gcp:
     runs-on: ubuntu-latest
