@@ -33,6 +33,7 @@ jobs:
         run : |
           echo "rename files"
           ls
+          pwd
           cd ../to_upload 
           mv -v about.html about
           mv -v blog.html blog
