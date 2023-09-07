@@ -28,20 +28,18 @@ jobs:
       - name: move the files
         run : |
           echo "create folder - move all files to new folder"
-          ls
           cd ..
-          ls
           mkdir to_upload | cp -a alamhanz.github.io/* to_upload/ 
           ls
           cd to_upload
           ls
-          cd ../..
-          ls   
 
       - name: rename the files
         run : |
           echo "rename files"
           pwd
+          cd ..
+          ls
           cd ..
           ls
           mv -v about.html about
