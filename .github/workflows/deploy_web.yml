@@ -40,7 +40,7 @@ jobs:
           pwd
           cd ..
           ls
-          cd ..
+          cd to_upload
           ls
           mv -v about.html about
           mv -v blog.html blog
