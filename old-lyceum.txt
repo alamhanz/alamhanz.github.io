@@ -72,37 +72,32 @@
           </h1>
 
           <div class="text-sm md:text-xl 2xl:text-2xl justify-evenly leading-relaxed">
-            Welcome to Lyceum Project, my private consultation project that distinguished offline discussion that
-            converges in-depth discussions on data, mathematics, statistics and automation. The consultation tailored
-            for any data practitioners especially those who lack a traditional data background. I recognize that the
-            true meaning behind the numbers remains elusive, leaving us questioning the depth of our insights.
-            Therefore, I aim to unravel the complexities of statistics, providing sessions for data enthusiasts to
-            solving their problem by delve deeper and bridge the gap between formulaic calculations and meaningful
+            Welcome to Lyceum Project, a distinguished offline workshop and forum that converges in-depth discussions on
+            statistics and automation, tailored for data practitioners who lack a traditional data background. In the
+            world of data, understanding the nuances of statistics is akin to solving a puzzle. Often, the true meaning
+            behind the numbers remains elusive, leaving us questioning the depth of our insights. We recognizes this
+            challenge and aims to unravel the complexities of statistics, providing a platform for data enthusiasts to
+            delve deeper and bridge the gap between formulaic calculations and meaningful
             interpretations.</br>
 
-            <br>Moreover, I acknowledges the repetitive nature of data-related tasks that can consume valuable time.
-            In Lyceum, I emphasize automation as a solution, guiding client in streamlining their workflows and
+            <br>Moreover, we acknowledges the repetitive nature of data-related tasks that can consume valuable time.
+            Lyceum emphasizes automation as a solution, guiding participants in streamlining their workflows and
             liberating them from mundane chores. By automating data processing, practitioners can channel their efforts
             into strategic thinking and creative exploration. </br>
 
-            <br>Lyceum serves as a safe space for individuals seeking to consult on their problem in project related to
-            data. Not only that, I will help them enhance their statistical understanding, embrace automation, and
-            ultimately unlock the full potential of their roles in the data landscape. Book my slot time now and
-            together we dechipher information through data then solve your problem.
+            <br>Lyceum serves as a haven for individuals seeking to enhance their statistical understanding, embrace
+            automation, and ultimately unlock the full potential of their roles in the data landscape. Join us and be
+            part of a vibrant community where education meets practical application. Together, empowering each other to
+            make informed decisions, drive innovation, and amplify the impact of data in our professional journeys.
 
           </div>
 
           <h1 class="font-bold text-2xl md:text-4xl 2xl:text-5xl my-10">
-            Session Details
+            Workshop Details
           </h1>
 
-          <!-- <div class="text-sm md:text-xl 2xl:text-2xl justify-evenly leading-relaxed">
-            I understand that not everyone understand
-
-
-
-
-            true learning comes from both understanding concepts and
+          <div class="text-sm md:text-xl 2xl:text-2xl justify-evenly leading-relaxed">
+            We understand that true learning comes from both understanding concepts and
             applying them to practical scenarios. That's why our 3 hours sessions will not only cover statistical
             concepts but also provide a unique opportunity for project discussions centered around statistical
             challenges and automation with not more than 8 participants in Jakarta.
@@ -130,24 +125,17 @@
             </ul>
 
 
-          </div> -->
-
-          <div class="text-sm md:text-xl 2xl:text-2xl justify-evenly leading-relaxed">
-            [WORK IN PROGRESS]
           </div>
-
 
           <h1 class="font-bold text-2xl md:text-4xl 2xl:text-5xl my-10">
             Get More Info
           </h1>
 
           <div class="text-sm md:text-xl 2xl:text-2xl justify-evenly leading-relaxed mt-6">
-            I am currently collecting participants who have data problem and want to solve it together with me in this
-            private consultation project. Once you list down your email in the link below, I will email you more details
-            on Time and Location.
-            </br>
+            We are currently collecting participants who have interest in the project. Once you list down your email in
+            the link below, we will email you more details on Time and Location of the project. </br>
 
-            <br><b>PS: </b>The consultation session is NOT offered free of charge; it requires a registration fee.
+            <br><b>PS: </b>The workshop is NOT offered free of charge; it requires a registration fee.
           </div>
 
           <div class="mt-10">
