@@ -35,6 +35,7 @@ jobs:
           mv -v blog.html blog
           mv -v cv.html cv
           mv -v lyceum.html lyceum
+          mv -v mycalendar.html mycalendar
           rm gha-creds-*.json
 
       - name: bucket upload
