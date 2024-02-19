@@ -47,3 +47,4 @@ jobs:
           gcloud storage objects update gs://alamhanz.xyz/blog --content-type=text/html
           gcloud storage objects update gs://alamhanz.xyz/cv --content-type=text/html
           gcloud storage objects update gs://alamhanz.xyz/lyceum --content-type=text/html
+          gcloud storage objects update gs://alamhanz.xyz/mycalendar --content-type=text/html
