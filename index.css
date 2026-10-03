@@ -1,3 +1,30 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .page-bg {
+    background-image: linear-gradient(rgba(238, 232, 232, 0.514), rgba(254, 253, 255, 0.941)), url('images/keyboard_1.jpg');
+    @apply bg-cover bg-fixed;
+  }
+
+  .icon-btn {
+    @apply inline-flex items-center justify-center w-10 md:w-12 h-10 md:h-12 rounded-full bg-white text-theme hover:bg-selected-text;
+  }
+
+  .nav-link {
+    @apply block p-3 tracking-widest hover:text-selected-text;
+  }
+
+  .nav-link[aria-current="page"] {
+    @apply underline;
+  }
+
+  .text-link {
+    @apply underline font-semibold hover:text-selected-text;
+  }
+
+  .body-copy {
+    @apply text-sm md:text-xl 2xl:text-2xl leading-relaxed;
+  }
+}
