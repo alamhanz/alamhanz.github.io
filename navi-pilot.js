@@ -6,6 +6,7 @@
     function setOpen(open) {
         nav.classList.toggle("-right-full", !open);
         nav.classList.toggle("right-0", open);
+        nav.classList.toggle("invisible", !open);
         toggle.setAttribute("aria-expanded", String(open));
     }
 
