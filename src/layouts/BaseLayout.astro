@@ -1,0 +1,36 @@
+---
+import '../styles/fonts.css';
+import '../styles/global.css';
+import SEO from '../components/SEO.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  type?: 'website' | 'article';
+  image?: string;
+}
+
+const props = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <SEO {...props} />
+  </head>
+  <body class="bg-body text-theme text-base md:text-lg leading-relaxed flex flex-col min-h-screen">
+    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-3">Skip to content</a>
+    <div class="page-bg flex-grow">
+      <Header />
+      <main id="main" class="mx-auto w-full max-w-5xl px-5 pb-24 pt-8 md:pt-12">
+        <slot />
+      </main>
+    </div>
+    <Footer />
+  </body>
+</html>

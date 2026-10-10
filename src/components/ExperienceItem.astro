@@ -1,0 +1,19 @@
+---
+interface Props {
+  role: string;
+  org: string;
+  period: string;
+  bullets: string[];
+}
+
+const { role, org, period, bullets } = Astro.props;
+---
+
+<li class="relative pb-10 pl-6 border-l-2 border-selected-text last:pb-0">
+  <span class="absolute -left-[7px] top-2 size-3 rounded-full bg-selected-text" aria-hidden="true"></span>
+  <h3 class="font-poppins font-semibold text-lg md:text-xl">{role}, {org}</h3>
+  <p class="text-sm md:text-base opacity-70 mb-2">{period}</p>
+  <ul class="list-disc pl-5 space-y-1 leading-relaxed">
+    {bullets.map((b) => <li>{b}</li>)}
+  </ul>
+</li>
