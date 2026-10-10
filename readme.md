@@ -1,31 +1,51 @@
 # alamhanz.xyz
 
-Static personal site: plain HTML + Tailwind CSS v3. No JavaScript framework, no build step for HTML.
+Personal site built with Astro 7 (static output) and Tailwind CSS v4. Home, About (data-driven), a Markdown blog with RSS and sitemap, plus redirect pages for `/cv` and `/mycalendar`.
 
-## Build CSS
+## Commands
+
+Node >= 22.12.
 
 ```
-npm install
-npm run build                                          # watch mode
-npx tailwindcss -i ./index.css -o ./tailwind.css       # one-off
+npm ci
+npm run dev            # dev server on http://localhost:4321
+npm run build          # static site -> dist/
+npm run preview        # serve dist/ locally
+npm run check:routes   # stage dist/ like the deploy does and verify every internal link
 ```
 
-`tailwind.css` is committed. Rebuild it before every commit that adds or changes classes.
+## Structure
 
-## Preview
+- `src/pages`: `index`, `about`, `blog/index`, `blog/[...slug]`, `cv`, `mycalendar`, `404`, `rss.xml.ts`
+- `src/data/site.ts`: site title, description, CV/calendar/Medium URLs, social links
+- `src/data/profile.ts`: all About facts (summary, experience, skills, certificates)
+- `src/content/blog/*.md`: blog posts
+- `src/styles/global.css`: Tailwind v4 theme tokens (body #F5F5F5, theme #30475E, selected-text #F05454, button #121212) and component classes
+- `src/components/Icon.astro`: Tabler outline icons inlined as SVG at build time
+- Fonts are self-hosted: Poppins (headings, UI), Inter (body). No third-party requests.
+- `legacy/`: the old v1 HTML site, kept for reference, not built or deployed
+- `scripts/`: `stage-dist.sh` (renames pages to extensionless objects), `check-routes.mjs`
 
-Serve the folder over HTTP, for example `python -m http.server`, and open `http://localhost:8000/`.
-Pages are linked without `.html` (`about`, `blog`, `cv`, `mycalendar`) because the deploy renames them, so use `npx serve .` for clean URLs or open the `.html` files directly.
+## Add a post
 
-## Pages
+Create `src/content/blog/<slug>.md`:
 
-- `index.html`, `about.html`, `lyceum.html`: full pages. Each one repeats the same head, nav and footer (copy `about.html` as a template).
-- `cv.html`, `blog.html`, `mycalendar.html`: redirect-only pages (meta refresh). Update the CV link in `cv.html` only.
-- `navi-pilot.js`: mobile menu toggle.
+```
+---
+title: 'My post'
+description: 'One line summary'
+pubDate: 2026-10-10
+tags: ['data']
+draft: false   # draft posts are hidden in production builds
+---
+```
 
-To add a page: copy a full page, update title/description and the `aria-current` link, add the link to the nav in every page, and add the file to the rename and upload steps in `.github/workflows/deploy_web.yml`.
+It appears at `/blog/<slug>`, on the blog index, on the home page (latest 3), in the RSS feed and the sitemap.
 
 ## Deploy
 
-Pushing to `xyz` deploys to production (GCS bucket). Work on a feature branch and merge after review.
-The workflow uploads the whole repository, so do not add private files here.
+Pushing to `xyz` runs `.github/workflows/deploy_web.yml`: build, stage (`dist/*.html` -> extensionless objects, except `index.html` and `404.html`), `gcloud storage rsync` to `gs://alamhanz.xyz` with deletion of removed files, then content-type and cache headers. The bucket-only objects `images/hello.jpg`, `images/hello2.jpg`, `images/hello3.jpg` (og:image) and `about.txt` are excluded from the sync, so they are never deleted. `.github/workflows/ci.yml` builds and checks routes on `v2` and on PRs into `v2` and `xyz`.
+
+Secrets: `GCP_CRED` (required). `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ZONE_ID` are optional; the Cloudflare cache purge is skipped when they are absent.
+
+The v2 site goes live only when `v2` is merged into `xyz`.
