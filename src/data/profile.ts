@@ -1,6 +1,7 @@
 export interface Experience {
   role: string;
   org: string;
+  country: string;
   period: string;
   start: string;
   end?: string;
@@ -19,8 +20,8 @@ export interface SkillLogo {
   icon?: string;
 }
 
-const location = { current: 'Tokyo, Japan', origin: 'Indonesia' };
-const based = `${location.current} (originally from ${location.origin})`;
+const location = { current: 'Tokyo, Japan' };
+const based = location.current;
 
 export const profile = {
   name: 'Alamsyah Hanza',
@@ -74,6 +75,7 @@ export const profile = {
     {
       role: 'Business Intelligence Engineer',
       org: 'Amazon',
+      country: 'Japan',
       period: 'Apr 2025 - Present',
       start: '2025-04',
       bullets: [
@@ -84,6 +86,7 @@ export const profile = {
     {
       role: 'Data Scientist',
       org: 'Roms, inc.',
+      country: 'Japan',
       period: 'Feb 2024 - Apr 2025',
       start: '2024-02',
       end: '2025-04',
@@ -92,6 +95,7 @@ export const profile = {
     {
       role: 'Data Scientist',
       org: 'Gojek Indonesia',
+      country: 'Indonesia',
       period: 'Mar 2019 - Apr 2024',
       start: '2019-03',
       end: '2024-04',
@@ -103,6 +107,7 @@ export const profile = {
     {
       role: 'Data Consultant (part-time)',
       org: 'Indonesia Re',
+      country: 'Indonesia',
       period: 'Oct 2022 - Apr 2023',
       start: '2022-10',
       end: '2023-04',
@@ -111,6 +116,7 @@ export const profile = {
     {
       role: 'Business Intelligence Analyst',
       org: 'Gojek Indonesia',
+      country: 'Indonesia',
       period: 'Oct 2017 - Mar 2019',
       start: '2017-10',
       end: '2019-03',
