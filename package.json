@@ -10,7 +10,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check:routes": "bash scripts/stage-dist.sh dist _stage/site && node scripts/check-routes.mjs _stage/site"
+    "check:routes": "bash scripts/stage-dist.sh dist _stage/site && node scripts/check-routes.mjs _stage/site",
+    "blog": "node tools/blog-manager/start.mjs",
+    "blog:smoke": "node tools/blog-manager/smoke.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
@@ -24,6 +26,8 @@
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
-    "@tabler/icons": "^3.49.0"
+    "@tabler/icons": "^3.49.0",
+    "easymde": "^2.21.0",
+    "yaml": "^2.9.1"
   }
 }
