@@ -205,13 +205,29 @@
     }
   });
 
+  function showEmpty(message = 'Select a post or create a new one.') {
+    $('empty').textContent = message;
+    state.slug = null;
+    state.dirty = false;
+    clearTimeout(state.timer);
+    $('frame').src = 'about:blank';
+    $('editor').hidden = true;
+    $('preview').hidden = true;
+    $('empty').hidden = false;
+    loadList();
+  }
+
   $('unpublish-btn').addEventListener('click', async () => {
     await save();
+    const slug = state.slug;
     try {
-      await api(`/posts/${state.slug}/unpublish`, json('POST'));
-      await openPost(state.slug);
+      await api(`/posts/${slug}/unpublish`, json('POST'));
+      await openPost(slug);
     } catch (e) {
-      setSave(`Unpublish failed: ${e.message}`);
+      if (/not found/i.test(e.message)) {
+        // the file was removed outside the manager (git pull, branch switch, manual delete)
+        showEmpty(`Unpublish failed: ${slug}.md no longer exists on disk. The list was refreshed.`);
+      } else setSave(`Unpublish failed: ${e.message}`);
     }
   });
 
@@ -237,12 +253,7 @@
       setSave(`Delete failed: ${e.message}`);
       return;
     }
-    state.slug = null;
-    $('frame').src = 'about:blank';
-    $('editor').hidden = true;
-    $('preview').hidden = true;
-    $('empty').hidden = false;
-    loadList();
+    showEmpty();
   });
 
   /* ---------- new post ---------- */

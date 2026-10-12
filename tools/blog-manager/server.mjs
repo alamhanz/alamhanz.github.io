@@ -1,4 +1,5 @@
 import http from 'node:http';
+import net from 'node:net';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -46,6 +47,24 @@ async function readJson(req) {
   }
 }
 
+/**
+ * True when something accepts TCP connections on 127.0.0.1:<port>. A TCP connect is enough for the
+ * "preview is up" banner: fetching a page made the banner depend on astro compiling "/" within the
+ * timeout (slow on a cold start) and on that page not returning a 5xx.
+ */
+export function astroReachable(port, timeoutMs = 1500) {
+  return new Promise((resolve) => {
+    const socket = net.connect({ host: '127.0.0.1', port });
+    const done = (up) => {
+      socket.destroy();
+      resolve(up);
+    };
+    socket.setTimeout(timeoutMs, () => done(false));
+    socket.once('connect', () => done(true));
+    socket.once('error', () => done(false));
+  });
+}
+
 export function createManagerServer({ port, astroPort, root = getRoot(), run = defaultRun } = {}) {
   const hosts = new Set([`127.0.0.1:${port}`, `localhost:${port}`]);
   const origins = new Set([...hosts].map((h) => `http://${h}`));
@@ -63,13 +82,7 @@ export function createManagerServer({ port, astroPort, root = getRoot(), run = d
   ].join('; ');
 
   async function status() {
-    let astroUp = false;
-    try {
-      const r = await fetch(`http://127.0.0.1:${astroPort}/`, { signal: AbortSignal.timeout(1500) });
-      astroUp = r.status < 500;
-    } catch {
-      astroUp = false;
-    }
+    const astroUp = await astroReachable(astroPort);
     if (Date.now() - ghCache.at > 30_000) ghCache = { at: Date.now(), ok: await ghStatus(run, root) };
     let branch = null;
     let dirty = null;

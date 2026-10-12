@@ -6,6 +6,7 @@
 - List posts (draft/published), create a draft, edit metadata and Markdown with live preview (autosave, Astro HMR reloads the iframe).
 - Upload images (button, drag/drop, paste) into `src/assets/blog/<slug>/`; pick a cover (`cover.<ext>`, cropped to 1200x630 for og:image).
 - Unpublish (`draft: true`), delete (type the slug), publish.
+- The slug is chosen in New post and is read-only afterwards (it is the file name and URL). The "Preview server is not reachable" banner is a plain TCP check on `BLOG_ASTRO_PORT`, so a slow first compile does not trigger it.
 
 ## Publish
 Publish builds a `draft: false` copy of the post in a temporary git worktree on a private temp branch off `origin/xyz` (or off `origin/post/<slug>` if that branch exists), commits only that post's files as `blog: publish <slug>` (honors your git signing config), pushes it to `post/<slug>` over HTTPS, and opens (or reuses) a PR into `xyz` with `gh`. The UI shows the PR URL. Your working tree, current branch and any local `post/<slug>` branch are never touched, and a failed publish leaves your local file unchanged; the local file is marked published only after the PR exists. Before pulling the merged PR, remove the local copy (new post: delete `src/content/blog/<slug>.md` and `src/assets/blog/<slug>/`, which the Delete button does; edit of an already-merged post: `git restore -- <those paths>`), otherwise `git pull` clashes.

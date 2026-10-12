@@ -10,7 +10,8 @@ button.danger { color: #b42323; border-color: #b42323; }
 button:disabled { opacity: .5; cursor: default; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 input[type=text], input[type=date] { width: 100%; padding: 6px 8px; border: 1px solid var(--line); border-radius: 3px; background: #fff; }
-input[readonly] { background: #eceff2; }
+input[readonly] { background: #eceff2; cursor: not-allowed; }
+.hint { display: block; font-weight: 400; color: #5b6770; }
 label { display: block; font-weight: 600; font-size: 12px; }
 label input { margin-top: 2px; font-weight: 400; }
 
