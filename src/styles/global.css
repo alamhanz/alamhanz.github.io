@@ -892,4 +892,16 @@
     background: var(--color-night-2);
     color: var(--color-accent);
   }
+
+  /* mobile tap targets: ~44px tall text links */
+  @media (max-width: 47.99rem) {
+    .mark,
+    .link,
+    .older a,
+    .foot-links a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 2.75rem;
+    }
+  }
 }
