@@ -29,7 +29,7 @@
     const ul = $('post-list');
     ul.replaceChildren(
       ...posts.map((p) => {
-        const b = el('button', { type: 'button' }, el('strong', { textContent: p.title }), el('span', { className: `badge${p.draft ? ' draft' : ''}`, textContent: p.draft ? 'draft' : 'published' }), el('small', { textContent: `${p.pubDate ?? 'no date'} - ${p.slug}` }));
+        const b = el('button', { type: 'button' }, el('strong', { textContent: p.title }), el('span', { className: `badge${p.draft ? ' draft' : ''}`, textContent: p.error ? 'error' : p.draft ? 'draft' : 'published' }), el('small', { textContent: p.error ? `${p.slug} - ${p.error}` : `${p.pubDate ?? 'no date'} - ${p.slug}` }));
         if (p.slug === state.slug) b.setAttribute('aria-current', 'true');
         b.addEventListener('click', () => openPost(p.slug));
         return el('li', {}, b);

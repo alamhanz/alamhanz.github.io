@@ -92,10 +92,20 @@ export function validateMeta(input) {
     draft: input.draft === true,
   };
   if (input.pubDate && !meta.pubDate) throw new HttpError(400, 'Invalid pubDate.');
-  if (meta.cover && !/^\.\.\/\.\.\/assets\/blog\/[a-z0-9-]+\/[a-z0-9._-]+$/.test(meta.cover)) {
-    throw new HttpError(400, 'cover must point into src/assets/blog/<slug>/.');
+  if (meta.cover && !COVER_RE.test(meta.cover)) {
+    throw new HttpError(400, 'cover must point to an image (png, jpg, jpeg, webp, gif, avif, svg) in src/assets/blog/<slug>/.');
   }
   return meta;
+}
+
+// Same image types as the upload allowlist in images.mjs (sanitizeName yields [a-z0-9_-] stems).
+const COVER_RE = /^\.\.\/\.\.\/assets\/blog\/([a-z0-9-]+)\/([a-z0-9_-]+\.(?:png|jpe?g|webp|gif|avif|svg))$/;
+
+/** Throw 400 unless `cover` is a valid path inside this post's image folder and the file exists. */
+export async function assertCoverFile(cover, slug, root = getRoot()) {
+  const m = COVER_RE.exec(cover ?? '');
+  if (!m || m[1] !== slug) throw new HttpError(400, 'cover must point to an image in src/assets/blog/<slug>/ of this post.');
+  if (!(await exists(safeJoin(imagesPath(slug, root), m[2])))) throw new HttpError(400, 'cover image file does not exist.');
 }
 
 async function exists(p) {
@@ -119,7 +129,14 @@ export async function listPosts(root = getRoot()) {
   for (const f of files) {
     const slug = f.replace(/\.md$/, '');
     if (!f.endsWith('.md') || !SLUG_RE.test(slug)) continue;
-    const { meta } = parse(await fs.readFile(path.join(dir, f), 'utf8'));
+    let meta;
+    try {
+      ({ meta } = parse(await fs.readFile(path.join(dir, f), 'utf8')));
+      if (!meta || typeof meta !== 'object') meta = {};
+    } catch (err) {
+      out.push({ slug, title: slug, pubDate: null, draft: false, tags: [], cover: null, error: `Unreadable front matter: ${String(err.message).split('\n')[0]}` });
+      continue;
+    }
     out.push({
       slug,
       title: meta.title ?? slug,
@@ -167,7 +184,7 @@ export async function savePost(slug, input, root = getRoot()) {
   if (!(await exists(p))) throw new HttpError(404, 'Post not found.');
   if (typeof input?.body !== 'string' || input.body.length > 2_000_000) throw new HttpError(400, 'Invalid body.');
   const meta = validateMeta(input.meta);
-  if (meta.cover && !meta.cover.startsWith(`../../assets/blog/${slug}/`)) throw new HttpError(400, 'cover belongs to another post.');
+  if (meta.cover) await assertCoverFile(meta.cover, slug, root);
   // updatedDate only tracks edits to already-published posts
   meta.updatedDate = meta.draft || today() === meta.pubDate ? undefined : today();
   await fs.writeFile(p, serialize(meta, input.body));

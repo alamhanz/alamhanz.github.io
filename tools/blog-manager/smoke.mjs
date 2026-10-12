@@ -7,6 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { sanitizeName } from './images.mjs';
 import { HttpError, assertSlug, parse, safeJoin, serialize, slugify } from './posts.mjs';
+import { publishPost } from './publish.mjs';
 import { createManagerServer } from './server.mjs';
 
 const args = new Set(process.argv.slice(2));
@@ -176,6 +177,68 @@ async function serverTests() {
       assert.equal((await request(port, 'GET', '/', {})).status, 200);
       assert.equal((await request(port, 'GET', '/vendor/easymde.min.js', {})).status, 200);
       assert.equal((await request(port, 'GET', '/..%2fpackage.json', {})).status, 404);
+    });
+
+    await ok('cover must be a real image file in the post folder', async () => {
+      const meta = (await jreq(port, 'GET', '/api/posts/smoke-test')).data.meta;
+      const put = (cover) => jreq(port, 'PUT', '/api/posts/smoke-test', { meta: { ...meta, cover, coverAlt: 'alt' }, body: 'Hello\n' });
+      for (const bad of ['../../assets/blog/smoke-test/..', '../../assets/blog/smoke-test/.', '../../assets/blog/smoke-test/x.txt', '../../assets/blog/smoke-test/missing.png', '../../assets/blog/smoke-test/']) {
+        assert.equal((await put(bad)).status, 400, bad);
+      }
+      assert.equal((await put('../../assets/blog/smoke-test/cover-pic.png')).status, 200);
+    });
+
+    await ok('publish validates meta before touching git (4xx, no calls)', async () => {
+      const base = (await jreq(port, 'GET', '/api/posts/smoke-test')).data;
+      const save = (m) => jreq(port, 'PUT', '/api/posts/smoke-test', { meta: m, body: base.body });
+      const before = calls.length;
+      assert.equal((await save({ ...base.meta, description: '' })).status, 200);
+      let r = await jreq(port, 'POST', '/api/posts/smoke-test/publish', {});
+      assert.equal(r.status, 422);
+      assert.match(r.data.error ?? '', /description/);
+      assert.equal((await save({ ...base.meta, coverAlt: '' })).status, 200);
+      r = await jreq(port, 'POST', '/api/posts/smoke-test/publish', {});
+      assert.equal(r.status, 422);
+      assert.match(r.data.error ?? '', /coverAlt/);
+      await fs.rm(path.join(root, 'src', 'assets', 'blog', 'smoke-test', 'cover-pic.png'));
+      r = await jreq(port, 'POST', '/api/posts/smoke-test/publish', {});
+      assert.equal(r.status, 422);
+      assert.match(r.data.error ?? '', /cover/);
+      assert.equal(calls.length, before, 'git/gh must not be called');
+      // restore a valid post (no cover) for the later tests
+      assert.equal((await save({ ...base.meta, cover: undefined, coverAlt: undefined })).status, 200);
+    });
+
+    await ok('one malformed post does not break the list', async () => {
+      const bad = path.join(root, 'src', 'content', 'blog', 'broken-post.md');
+      await fs.writeFile(bad, '---\ntitle: [unclosed\n  : : :\n---\nbody\n');
+      const r = await jreq(port, 'GET', '/api/posts');
+      assert.equal(r.status, 200);
+      const broken = r.data.find((p) => p.slug === 'broken-post');
+      assert.ok(broken && broken.error, 'flagged with error');
+      assert.ok(r.data.some((p) => p.slug === 'smoke-test' && !p.error));
+      await fs.rm(bad);
+    });
+
+    await ok('oversized JSON body is 413', async () => {
+      const r = await request(port, 'POST', '/api/posts', { body: JSON.stringify({ title: 'x'.repeat(2_600_000) }), headers: { 'Content-Type': 'application/json' } });
+      assert.equal(r.status, 413);
+    });
+
+    await ok('publishes are serialized by one global lock', async () => {
+      await jreq(port, 'POST', '/api/posts', { title: 'Second Post', description: 'd' });
+      let release;
+      const gate = new Promise((r) => (release = r));
+      const slowRun = async (cmd, a) => {
+        if (cmd === 'git' && a[0] === 'fetch') await gate;
+        return fakeRun(cmd, a);
+      };
+      const first = publishPost('second-post', { run: slowRun, root });
+      await new Promise((r) => setTimeout(r, 50));
+      await assert.rejects(publishPost('smoke-test', { run: fakeRun, root }), (e) => e instanceof HttpError && e.status === 409);
+      release();
+      await first;
+      await jreq(port, 'DELETE', '/api/posts/second-post');
     });
 
     await ok('publish dryRun makes no calls', async () => {

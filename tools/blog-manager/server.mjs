@@ -125,10 +125,12 @@ export function createManagerServer({ port, astroPort, root = getRoot(), run = d
     }
     if (sub === 'publish' && parts.length === 3 && method === 'POST') {
       const body = await readJson(req);
-      if (steps.has(slug)) throw new HttpError(409, 'A publish is already running for this post.');
+      const dryRun = body.dryRun === true;
+      if (dryRun) return sendJson(res, 200, await publishPost(slug, { dryRun, run, root }));
+      if (steps.size) throw new HttpError(409, 'Another publish is already running. Wait for it to finish.');
       steps.set(slug, 'Starting');
       try {
-        const result = await publishPost(slug, { dryRun: body.dryRun === true, run, root, onStep: (s) => steps.set(slug, s) });
+        const result = await publishPost(slug, { run, root, onStep: (s) => steps.set(slug, s) });
         return sendJson(res, 200, result);
       } finally {
         steps.delete(slug);

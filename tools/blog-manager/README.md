@@ -20,7 +20,7 @@ Needs `git` and the GitHub CLI (`gh auth login`).
 | `BLOG_ROOT` | repo root | content root override (tests) |
 
 ## Security
-Binds 127.0.0.1 only; requests must carry a `127.0.0.1:<port>` or `localhost:<port>` Host, and mutating requests with a foreign Origin are rejected. Slugs match `^[a-z0-9]+(-[a-z0-9]+)*$`, every path is confined to `src/content/blog` or `src/assets/blog/<slug>`, uploads are allowlisted (png, jpg, jpeg, webp, gif, avif, svg) and capped at 10 MB. If the manager process is killed hard (not Ctrl+C), an orphaned astro process may remain; stop it from Task Manager or `Get-Process node`.
+Binds 127.0.0.1 only; requests must carry a `127.0.0.1:<port>` or `localhost:<port>` Host, and mutating requests with a foreign Origin are rejected. Mutating requests with no Origin and no Sec-Fetch-Site (e.g. curl from another local process) are accepted: this is intentional for a loopback-only tool. Slugs match `^[a-z0-9]+(-[a-z0-9]+)*$`, every path is confined to `src/content/blog` or `src/assets/blog/<slug>`, uploads are allowlisted (png, jpg, jpeg, webp, gif, avif, svg) and capped at 10 MB. If the manager process is killed hard (not Ctrl+C), an orphaned astro process may remain; stop it from Task Manager or `Get-Process node`.
 
 ## Tests
 `npm run blog:smoke` (`-- --unit` or `-- --server`): unit checks plus API CRUD on a temp root, with publish exercised via dry-run and a stubbed command runner (no network).

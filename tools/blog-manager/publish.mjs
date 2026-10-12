@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { HttpError, assertSlug, assetsDir, getRoot, imagesPath, postPath, postsDir, readPost, serialize, setDraft, today } from './posts.mjs';
+import { HttpError, assertCoverFile, assertSlug, assetsDir, getRoot, imagesPath, postPath, postsDir, readPost, serialize, setDraft, today } from './posts.mjs';
 
 /** Default runner: execFile with an argument array, never a shell string. */
 export function defaultRun(cmd, args, opts = {}) {
@@ -39,8 +39,38 @@ async function pathExists(p) {
  * Publish a post as a PR against xyz using a temporary worktree.
  * `run` is injectable (tests); `dryRun` returns the planned steps without touching anything.
  */
-export async function publishPost(slug, { dryRun = false, run = defaultRun, root = getRoot(), onStep = () => {} } = {}) {
+export async function publishPost(slug, opts = {}) {
   assertSlug(slug);
+  if (opts.dryRun) return doPublish(slug, opts);
+  // One global lock: all publishes share the same repo (fetch, worktrees, branches).
+  if (publishLocked) throw new HttpError(409, 'Another publish is already running. Wait for it to finish.');
+  publishLocked = true;
+  try {
+    return await doPublish(slug, opts);
+  } finally {
+    publishLocked = false;
+  }
+}
+
+let publishLocked = false;
+
+const nonEmpty = (v) => typeof v === 'string' && v.trim() !== '';
+
+/** Mirror src/content.config.ts (title, description required) plus the manager's cover/alt rules; 422 on failure. */
+async function assertPublishable(slug, meta, root) {
+  if (!nonEmpty(meta.title)) throw new HttpError(422, 'Cannot publish: title is required.');
+  if (!nonEmpty(meta.description)) throw new HttpError(422, 'Cannot publish: description is required.');
+  if (meta.cover) {
+    try {
+      await assertCoverFile(meta.cover, slug, root);
+    } catch (err) {
+      throw new HttpError(422, `Cannot publish: ${err.message}`);
+    }
+    if (!nonEmpty(meta.coverAlt)) throw new HttpError(422, 'Cannot publish: coverAlt is required when a cover is set.');
+  }
+}
+
+async function doPublish(slug, { dryRun = false, run = defaultRun, root = getRoot(), onStep = () => {} }) {
   const branch = `post/${slug}`;
   const mdRel = `src/content/blog/${slug}.md`;
   const imgRel = `src/assets/blog/${slug}`;
@@ -68,6 +98,9 @@ export async function publishPost(slug, { dryRun = false, run = defaultRun, root
   const cwd = root;
   const git = (args, c = cwd) => run('git', args, { cwd: c });
 
+  const { meta, body } = await readPost(slug, root);
+  await assertPublishable(slug, meta, root);
+
   onStep('Checking GitHub CLI');
   if (!(await ghStatus(run, root))) throw new HttpError(412, 'GitHub CLI is not ready. Install it and run `gh auth login`.');
   try {
@@ -76,7 +109,6 @@ export async function publishPost(slug, { dryRun = false, run = defaultRun, root
     throw new HttpError(412, 'No git remote named origin.');
   }
 
-  const { meta, body } = await readPost(slug, root);
   const published = { ...meta, draft: false, pubDate: meta.pubDate || today() };
 
   onStep('Fetching origin');
