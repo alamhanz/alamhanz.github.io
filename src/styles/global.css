@@ -46,7 +46,7 @@
     font-size: 1.0625rem;
     line-height: 1.7;
     -webkit-font-smoothing: antialiased;
-    background-image: linear-gradient(rgba(245, 245, 245, 0.92), rgba(245, 245, 245, 0.92)), url('/images/keyboard-bg.jpg');
+    background-image: linear-gradient(rgba(245, 245, 245, 0.94), rgba(245, 245, 245, 0.94)), url('/images/keyboard-bg.jpg');
     background-size: cover;
     background-position: center;
   }
