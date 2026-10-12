@@ -2,6 +2,7 @@
 import Icon from './Icon.astro';
 
 const path = Astro.url.pathname.replace(/(\/index)?(\.html)?\/?$/, '') || '/';
+const isHome = path === '/';
 const links = [
   { href: '/', label: 'home' },
   { href: '/about', label: 'about' },
@@ -13,8 +14,10 @@ const isCurrent = (href: string) => (href === '/' ? path === '/' : path === href
 
 <header class="site-head">
   <div class="wrap">
-    <a class="mark" href="/">Alamsyah Hanza</a>
-    <nav aria-label="Primary">
+    <a class="mark" href="/" aria-label={isHome ? 'Alamsyah Hanza, home' : undefined}>
+      {isHome ? <span class="mark-name" data-reveal="hidden" aria-hidden="true">Alamsyah Hanza</span> : 'Alamsyah Hanza'}
+    </a>
+    <nav aria-label="Primary" class="ml-auto">
       <button id="toggle" class="menu-btn" type="button" aria-controls="nav" aria-expanded="false" aria-label="Menu">
         <Icon name="menu-2" class="size-6 toggle-open" />
         <Icon name="x" class="size-6 toggle-close hidden" />
@@ -60,5 +63,21 @@ const isCurrent = (href: string) => (href === '/' ? path === '/' : path === href
         toggle.focus();
       }
     });
+  }
+
+  const markName = document.querySelector<HTMLElement>('.mark-name');
+  const heroName = document.getElementById('hello');
+
+  if (markName && heroName && 'IntersectionObserver' in window) {
+    const header = document.querySelector<HTMLElement>('.site-head');
+    const offset = header ? header.offsetHeight : 64;
+    new IntersectionObserver(
+      ([entry]) => {
+        const show = !entry.isIntersecting;
+        markName.dataset.reveal = show ? 'shown' : 'hidden';
+        markName.setAttribute('aria-hidden', String(!show));
+      },
+      { rootMargin: `-${offset}px 0px 0px 0px` },
+    ).observe(heroName);
   }
 </script>

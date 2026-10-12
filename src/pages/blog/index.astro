@@ -13,7 +13,7 @@ const posts = (await getCollection('blog', ({ data }) => !import.meta.env.PROD |
 <BaseLayout title="Blog | Alamsyah Hanza" description="Writing on data science, analytics and building things." path="/blog">
   <section aria-labelledby="blog-title">
     <div class="blog-head">
-      <p class="label"><b>$</b> ls -lt ~/blog</p>
+      <p class="label"><b>In [1]:</b> posts.sort_values('date')</p>
       <h1 id="blog-title">Writing</h1>
       <p class="d">Notes on data science, analytics and building things.</p>
     </div>

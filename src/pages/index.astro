@@ -2,10 +2,20 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PostCard from '../components/PostCard.astro';
-import ProfileJson from '../components/ProfileJson.astro';
+import ProfileNotebook from '../components/ProfileNotebook.astro';
 import Icon from '../components/Icon.astro';
+import SocialLinks from '../components/SocialLinks.astro';
 import { profile } from '../data/profile';
 import { site } from '../data/site';
+
+// decorative scatter + fitted line (seeded, deterministic)
+let seed = 7;
+const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const pts = Array.from({ length: 46 }, (_, i) => ({
+  x: Math.round(60 + (i / 45) * 1080),
+  y: Math.round(520 - (i / 45) * 300 + (rnd() - 0.5) * 150),
+}));
+const curve = 'M0 600 C 150 560, 260 520, 400 470 S 640 380, 780 330 S 1020 190, 1200 150';
 
 const posts = (await getCollection('blog', ({ data }) => !import.meta.env.PROD || !data.draft))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
@@ -14,13 +24,27 @@ const posts = (await getCollection('blog', ({ data }) => !import.meta.env.PROD |
 
 <BaseLayout title={site.title} description={site.description} path="/">
   <section slot="hero" class="hero dark" aria-labelledby="hello">
+    <svg class="hero-chart" viewBox="0 0 1200 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+      <g stroke="#8fa6bf" stroke-width="1" fill="none">
+        {[1, 2, 3, 4, 5].map((i) => <line x1="0" x2="1200" y1={i * 106} y2={i * 106} stroke-opacity="0.35" />)}
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((i) => <line y1="0" y2="640" x1={i * 100} x2={i * 100} stroke-opacity="0.2" />)}
+        <path d="M60 40 V600 H1160" stroke-width="2" />
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => <line x1={i * 110 + 10} x2={i * 110 + 10} y1="600" y2="612" stroke-width="2" />)}
+        {[1, 2, 3, 4, 5].map((i) => <line x1="48" x2="60" y1={i * 106} y2={i * 106} stroke-width="2" />)}
+      </g>
+      <g fill="#e9ecef">
+        {pts.map((p) => <circle cx={p.x} cy={p.y} r="5" />)}
+      </g>
+      <line x1="60" y1="520" x2="1140" y2="220" stroke="#f05454" stroke-width="3" />
+      <path d={curve} stroke="#8fa6bf" stroke-width="2" fill="none" />
+    </svg>
     <div class="wrap hero-grid">
       <div>
-        <p class="prompt">whoami</p>
+        <p class="prompt">data_person.intro()</p>
         <h1 id="hello">{profile.name}</h1>
         <p class="sub">data scientist + BI engineer // retail &amp; logistics</p>
         <p class="vs">
-          I use data to <span class="hl">cut costs</span> and <span class="hl">speed up delivery</span> in retail and logistics.
+          <span class="hl">Optimization</span> through data: <span class="hl">cutting costs</span> and speeding up delivery in retail and logistics.
         </p>
         <div class="actions">
           <a class="btn" href="/mycalendar">
@@ -29,14 +53,17 @@ const posts = (await getCollection('blog', ({ data }) => !import.meta.env.PROD |
           </a>
           <a class="link" href="/about">Read the profile</a>
         </div>
+        <div class="hero-socials">
+          <SocialLinks />
+        </div>
       </div>
-      <ProfileJson />
+      <ProfileNotebook />
     </div>
   </section>
 
   <section class="sect" aria-labelledby="work-on">
     <header class="sect-head">
-      <p class="label"><b>#</b> focus</p>
+      <p class="label"><b>In [2]:</b> optimize(df)</p>
       <h2 id="work-on">What I work on</h2>
     </header>
     <div>
@@ -51,7 +78,7 @@ const posts = (await getCollection('blog', ({ data }) => !import.meta.env.PROD |
     posts.length > 0 && (
       <section class="sect" aria-labelledby="latest">
         <header class="sect-head">
-          <p class="label"><b>$</b> ls -lt blog/</p>
+          <p class="label"><b>In [3]:</b> posts.head(3)</p>
           <h2 id="latest">Latest writing</h2>
         </header>
         <div>
