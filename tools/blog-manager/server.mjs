@@ -10,7 +10,6 @@ import { defaultRun, ghStatus, publishPost } from './publish.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const UI_DIR = path.join(HERE, 'ui');
-const VENDOR_DIR = path.join(REPO_ROOT, 'node_modules', 'easymde', 'dist');
 const FONT_DIRS = [
   path.join(REPO_ROOT, 'node_modules', '@fontsource', 'poppins', 'files'),
   path.join(REPO_ROOT, 'node_modules', '@fontsource-variable', 'inter', 'files'),
@@ -21,8 +20,6 @@ const JSON_LIMIT = 2_500_000;
 const STATIC = {
   '/': [path.join(UI_DIR, 'index.html'), 'text/html; charset=utf-8'],
   '/style.css': [path.join(UI_DIR, 'style.css'), 'text/css; charset=utf-8'],
-  '/vendor/easymde.min.js': [path.join(VENDOR_DIR, 'easymde.min.js'), 'text/javascript; charset=utf-8'],
-  '/vendor/easymde.min.css': [path.join(VENDOR_DIR, 'easymde.min.css'), 'text/css; charset=utf-8'],
 };
 
 function send(res, status, body, headers = {}) {

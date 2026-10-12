@@ -7,6 +7,7 @@ import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { editorUnit } from './editor-unit.mjs';
 import { sanitizeName } from './images.mjs';
 import { HttpError, REPO_ROOT, assertSlug, parse, safeJoin, serialize, slugify } from './posts.mjs';
 import { publishPost } from './publish.mjs';
@@ -32,6 +33,7 @@ function ok(name, fn) {
 const throws400 = (fn) => assert.throws(fn, (e) => e instanceof HttpError && e.status === 400);
 
 async function unit() {
+  await editorUnit(ok);
   await ok('slug validator', () => {
     for (const s of ['a', 'hello-world', 'a1-b2', 'x'.repeat(80)]) assertSlug(s);
     for (const s of ['', 'A', '../x', '%2e%2e', 'a/b', '..\\x', 'C:\\x', '/etc/passwd', 'a--b', '-a', 'a-', 'x'.repeat(81), 'a b', null, 'con', 'nul', 'com1', 'lpt9']) throws400(() => assertSlug(s));
@@ -194,7 +196,7 @@ async function serverTests() {
       assert.equal((await jreq(port, 'POST', '/api/posts', { title: 'Same Origin' }, { Origin: `http://127.0.0.1:${port}` })).status, 201);
       assert.equal((await jreq(port, 'DELETE', '/api/posts/same-origin')).status, 200);
       assert.equal((await request(port, 'GET', '/', {})).status, 200);
-      assert.equal((await request(port, 'GET', '/vendor/easymde.min.js', {})).status, 200);
+      assert.equal((await request(port, 'GET', '/vendor/easymde.min.js', {})).status, 404);
       assert.equal((await request(port, 'GET', '/..%2fpackage.json', {})).status, 404);
     });
 
@@ -427,6 +429,26 @@ async function serverTests() {
       await assert.rejects(fs.access(path.join(blog, 'renamed-live.md')));
       assert.equal((await jreq(port, 'DELETE', '/api/posts/other-one')).status, 200);
       assert.equal((await jreq(port, 'DELETE', '/api/posts/new-name')).status, 200);
+    });
+
+    await ok('round-trip fixtures: GET then PUT unchanged leaves the file equal to serialize(parse(original))', async () => {
+      const dir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures');
+      const names = (await fs.readdir(dir)).filter((n) => /^roundtrip-.*\.md$/.test(n));
+      assert.ok(names.length >= 2, 'fixtures present');
+      for (const name of names) {
+        const slug = name.replace(/\.md$/, '');
+        const dest = path.join(root, 'src', 'content', 'blog', name);
+        const original = await fs.readFile(path.join(dir, name), 'utf8');
+        await fs.writeFile(dest, original);
+        const expected = serialize(parse(original).meta, parse(original).body);
+        const got = (await jreq(port, 'GET', `/api/posts/${slug}`)).data;
+        assert.equal(got.body, parse(original).body, `${slug} body served untouched`);
+        const put = await jreq(port, 'PUT', `/api/posts/${slug}`, { meta: got.meta, body: got.body });
+        assert.equal(put.status, 200, JSON.stringify(put.data));
+        assert.equal(await fs.readFile(dest, 'utf8'), expected, `${slug} bytes after save`);
+        assert.equal(serialize(parse(expected).meta, parse(expected).body), expected, `${slug} serialize is stable`);
+        assert.equal((await jreq(port, 'DELETE', `/api/posts/${slug}`)).status, 200);
+      }
     });
 
     await ok('delete removes post and images; missing is 404', async () => {
