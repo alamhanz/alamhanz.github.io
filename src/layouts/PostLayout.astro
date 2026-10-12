@@ -13,7 +13,7 @@ const og = cover ? await getImage({ src: cover, width: 1200, height: 630, fit: '
 const fmt = (d: Date) => d.toISOString().slice(0, 10);
 ---
 
-<BaseLayout title={`${title} | Alamsyah Hanza`} description={description} path={`/blog/${post.id}`} type="article" image={og?.src}>
+<BaseLayout title={`${title} | Alamsyah Hanza`} description={description} path={`/blog/${post.id}`} type="article" image={og?.src} imageWidth={og ? 1200 : undefined} imageHeight={og ? 630 : undefined}>
   <article class="pt-12 md:pt-16">
     <a class="link text-sm" href="/blog">&larr; All posts</a>
     <h1 class="font-bold text-4xl md:text-6xl leading-tight mt-6" style="letter-spacing:-0.03em">{title}</h1>

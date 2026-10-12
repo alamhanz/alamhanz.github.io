@@ -7,10 +7,12 @@ interface Props {
   path: string;
   type?: 'website' | 'article';
   image?: string;
+  imageWidth?: number;
+  imageHeight?: number;
   noindex?: boolean;
 }
 
-const { title, description, path, type = 'website', image = site.ogImage, noindex = false } = Astro.props;
+const { title, description, path, type = 'website', image = site.ogImage, imageWidth = 975, imageHeight = 480, noindex = false } = Astro.props;
 const canonical = path === '/' ? site.url : new URL(path, site.url).href;
 const imageUrl = new URL(image, site.url).href;
 ---
@@ -28,8 +30,8 @@ const imageUrl = new URL(image, site.url).href;
 <meta property="og:image" content={imageUrl} />
 <meta property="og:image:secure_url" content={imageUrl} />
 <meta property="og:image:type" content="image/jpeg" />
-<meta property="og:image:width" content="975" />
-<meta property="og:image:height" content="480" />
+<meta property="og:image:width" content={imageWidth} />
+<meta property="og:image:height" content={imageHeight} />
 <meta name="twitter:card" content="summary_large_image" />
 <link rel="alternate" type="application/rss+xml" title={site.name} href="/rss.xml" />
 <link rel="sitemap" href="/sitemap-index.xml" />

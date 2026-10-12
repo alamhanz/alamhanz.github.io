@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { HttpError, assertSlug, imagesPath, safeJoin, postPath, getRoot } from './posts.mjs';
+import { HttpError, RESERVED_RE, assertSlug, imagesPath, safeJoin, postPath, getRoot } from './posts.mjs';
 
 export const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 export const EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.avif', '.svg']);
@@ -24,7 +24,7 @@ export function sanitizeName(name) {
     .replace(/[^a-z0-9_-]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 60);
-  return `${stem || 'image'}${ext}`;
+  return `${!stem || RESERVED_RE.test(stem) ? `img-${stem}` : stem}${ext}`;
 }
 
 export async function saveImage(slug, name, buf, root = getRoot()) {

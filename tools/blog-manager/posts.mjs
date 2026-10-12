@@ -20,8 +20,10 @@ export function getRoot() {
 export const postsDir = (root = getRoot()) => path.join(root, 'src', 'content', 'blog');
 export const assetsDir = (root = getRoot()) => path.join(root, 'src', 'assets', 'blog');
 
+export const RESERVED_RE = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/;
+
 export function assertSlug(slug) {
-  if (typeof slug !== 'string' || slug.length > 80 || !SLUG_RE.test(slug)) {
+  if (typeof slug !== 'string' || slug.length > 80 || !SLUG_RE.test(slug) || RESERVED_RE.test(slug)) {
     throw new HttpError(400, 'Invalid slug: use lowercase letters, digits and single hyphens (max 80).');
   }
   return slug;

@@ -8,7 +8,7 @@
 - Unpublish (`draft: true`), delete (type the slug), publish.
 
 ## Publish
-Publish sets `draft: false`, then in a temporary git worktree creates (or updates) branch `post/<slug>` off `origin/xyz`, commits only that post's files as `blog: publish <slug>` (honors your git signing config), pushes over HTTPS, and opens (or reuses) a PR into `xyz` with `gh`. The UI shows the PR URL. Your working tree and current branch are never touched; the local copy of the post stays, so run `git pull` after the PR is merged.
+Publish builds a `draft: false` copy of the post in a temporary git worktree on a private temp branch off `origin/xyz` (or off `origin/post/<slug>` if that branch exists), commits only that post's files as `blog: publish <slug>` (honors your git signing config), pushes it to `post/<slug>` over HTTPS, and opens (or reuses) a PR into `xyz` with `gh`. The UI shows the PR URL. Your working tree, current branch and any local `post/<slug>` branch are never touched, and a failed publish leaves your local file unchanged; the local file is marked published only after the PR exists. Before pulling the merged PR, remove the local copy (new post: delete `src/content/blog/<slug>.md` and `src/assets/blog/<slug>/`, which the Delete button does; edit of an already-merged post: `git restore -- <those paths>`), otherwise `git pull` clashes.
 
 Needs `git` and the GitHub CLI (`gh auth login`).
 

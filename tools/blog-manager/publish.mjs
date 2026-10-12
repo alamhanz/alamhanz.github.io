@@ -2,12 +2,12 @@ import { execFile } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { HttpError, assertSlug, assetsDir, getRoot, imagesPath, postPath, postsDir, readPost, setDraft } from './posts.mjs';
+import { HttpError, assertSlug, assetsDir, getRoot, imagesPath, postPath, postsDir, readPost, serialize, setDraft, today } from './posts.mjs';
 
 /** Default runner: execFile with an argument array, never a shell string. */
 export function defaultRun(cmd, args, opts = {}) {
   return new Promise((resolve, reject) => {
-    execFile(cmd, args, { cwd: opts.cwd, windowsHide: true, maxBuffer: 10 * 1024 * 1024, timeout: 120_000 }, (err, stdout, stderr) => {
+    execFile(cmd, args, { cwd: opts.cwd, env: { ...process.env, GIT_TERMINAL_PROMPT: '0' }, windowsHide: true, maxBuffer: 10 * 1024 * 1024, timeout: 120_000 }, (err, stdout, stderr) => {
       if (err) {
         const e = new Error(`${cmd} ${args[0] ?? ''} failed: ${String(stderr || err.message).trim()}`);
         e.code = err.code;
@@ -51,16 +51,16 @@ export async function publishPost(slug, { dryRun = false, run = defaultRun, root
       steps: [
         'gh auth status',
         'git remote get-url origin',
-        `set draft:false in ${mdRel}`,
+        `write draft:false version of ${mdRel} into the worktree only`,
         `git fetch origin xyz`,
         `git ls-remote --heads origin ${branch}`,
-        `git worktree add -b ${branch} <tmp> origin/xyz  (or -B ${branch} <tmp> origin/${branch} if it exists)`,
+        `git worktree add -b <tmp-branch> <tmp> origin/xyz  (or origin/${branch} if it exists)`,
         `copy ${mdRel} and ${imgRel}/ into the worktree`,
         `git add -A -- ${mdRel} ${imgRel}`,
         `git commit -m "blog: publish ${slug}"`,
-        `git push -u origin ${branch}`,
+        `git push origin HEAD:refs/heads/${branch}`,
         `gh pr view ${branch} --json url,state  (else gh pr create --base xyz --head ${branch})`,
-        'git worktree remove --force <tmp>; git branch -D ' + branch,
+        'git worktree remove --force <tmp>; git branch -D <tmp-branch>  (your own ' + branch + ' is never touched)',
       ],
     };
   }
@@ -76,9 +76,8 @@ export async function publishPost(slug, { dryRun = false, run = defaultRun, root
     throw new HttpError(412, 'No git remote named origin.');
   }
 
-  onStep('Marking post as published');
-  await setDraft(slug, false, root);
-  const { meta } = await readPost(slug, root);
+  const { meta, body } = await readPost(slug, root);
+  const published = { ...meta, draft: false, pubDate: meta.pubDate || today() };
 
   onStep('Fetching origin');
   await git(['fetch', 'origin', 'xyz']);
@@ -87,15 +86,18 @@ export async function publishPost(slug, { dryRun = false, run = defaultRun, root
 
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), `blog-publish-${slug}-`));
   const wt = path.join(dir, 'wt');
+  // Always use a private temp branch so a pre-existing local post/<slug> is never reused or deleted.
+  const tmpBranch = `blog-publish-tmp/${slug}-${Date.now().toString(36)}`;
   let added = false;
+  let createdBranch = false;
   try {
     onStep('Preparing worktree');
-    if (remoteHas) await git(['worktree', 'add', '-B', branch, wt, `origin/${branch}`]);
-    else await git(['worktree', 'add', '-b', branch, wt, 'origin/xyz']);
+    await git(['worktree', 'add', '-b', tmpBranch, wt, remoteHas ? `origin/${branch}` : 'origin/xyz']);
     added = true;
+    createdBranch = true;
 
     await fs.mkdir(postsDir(wt), { recursive: true });
-    await fs.copyFile(postPath(slug, root), postPath(slug, wt));
+    await fs.writeFile(postPath(slug, wt), serialize(published, body));
     const tracked = (await git(['ls-files', '--', imgRel], wt)).trim() !== '';
     const srcImgs = imagesPath(slug, root);
     const hasImgs = await pathExists(srcImgs);
@@ -114,7 +116,7 @@ export async function publishPost(slug, { dryRun = false, run = defaultRun, root
     await git(['commit', '-m', `blog: publish ${slug}`], wt);
 
     onStep('Pushing');
-    await git(['push', '-u', 'origin', branch], wt);
+    await git(['push', 'origin', `HEAD:refs/heads/${branch}`], wt);
 
     onStep('Opening pull request');
     let url = '';
@@ -131,11 +133,16 @@ export async function publishPost(slug, { dryRun = false, run = defaultRun, root
         { cwd },
       );
     }
-    return { ok: true, url: url.split(/\r?\n/).pop(), hint: 'After the PR is merged, run `git pull` on your main checkout.' };
+    await setDraft(slug, false, root);
+    return {
+      ok: true,
+      url: url.split(/\r?\n/).pop(),
+      hint: `After the PR is merged, remove your local copy first or git pull will clash: for a new post delete ${mdRel} and ${imgRel}/ (the Delete button does this); for an edit of an already-merged post run git restore -- ${mdRel} ${imgRel}. Then git pull.`,
+    };
   } finally {
     if (added) await git(['worktree', 'remove', '--force', wt]).catch(() => {});
     await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
     await git(['worktree', 'prune']).catch(() => {});
-    await git(['branch', '-D', branch]).catch(() => {});
+    if (createdBranch) await git(['branch', '-D', tmpBranch]).catch(() => {});
   }
 }

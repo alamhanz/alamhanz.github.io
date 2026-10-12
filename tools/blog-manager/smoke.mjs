@@ -31,7 +31,7 @@ const throws400 = (fn) => assert.throws(fn, (e) => e instanceof HttpError && e.s
 async function unit() {
   await ok('slug validator', () => {
     for (const s of ['a', 'hello-world', 'a1-b2', 'x'.repeat(80)]) assertSlug(s);
-    for (const s of ['', 'A', '../x', '%2e%2e', 'a/b', '..\\x', 'C:\\x', '/etc/passwd', 'a--b', '-a', 'a-', 'x'.repeat(81), 'a b', null]) throws400(() => assertSlug(s));
+    for (const s of ['', 'A', '../x', '%2e%2e', 'a/b', '..\\x', 'C:\\x', '/etc/passwd', 'a--b', '-a', 'a-', 'x'.repeat(81), 'a b', null, 'con', 'nul', 'com1', 'lpt9']) throws400(() => assertSlug(s));
   });
   await ok('safeJoin confines paths', () => {
     const base = path.resolve(os.tmpdir(), 'bm-base');
@@ -65,6 +65,7 @@ async function unit() {
     assert.equal(sanitizeName('..\\..\\evil.jpg'), 'evil.jpg');
     assert.equal(sanitizeName('/abs/path/x.webp'), 'x.webp');
     assert.equal(sanitizeName('a.b.c.png'), 'a-b-c.png');
+    assert.equal(sanitizeName('CON.png'), 'img-con.png');
     for (const bad of ['x.exe', 'x', 'x.html', '.png.txt']) throws400(() => sanitizeName(bad));
   });
   await ok('slugify', () => assert.equal(slugify('Héllo, World! 2026'), 'hello-world-2026'));
@@ -97,9 +98,11 @@ const jreq = (port, method, p, obj, headers) =>
 async function serverTests() {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'blog-smoke-'));
   const calls = [];
+  let failPush = false;
   const fakeRun = async (cmd, a, opts = {}) => {
     calls.push([cmd, ...a]);
-    if (cmd === 'git' && a[0] === 'worktree' && a[1] === 'add') await fs.mkdir(a.at(-2) === '-b' ? a.at(-1) : a.at(-2), { recursive: true });
+    if (cmd === 'git' && a[0] === 'worktree' && a[1] === 'add') await fs.mkdir(a.at(-2), { recursive: true });
+    if (cmd === 'git' && a[0] === 'push' && failPush) throw new Error('push rejected');
     if (cmd === 'git' && a[0] === 'status' && a.includes('--porcelain')) return ' M changed';
     if (cmd === 'gh' && a[0] === 'pr' && a[1] === 'view') throw new Error('no pr');
     if (cmd === 'gh' && a[0] === 'pr' && a[1] === 'create') return 'https://example.invalid/pr/1';
@@ -180,22 +183,39 @@ async function serverTests() {
       const r = await jreq(port, 'POST', '/api/posts/smoke-test/publish', { dryRun: true });
       assert.equal(r.status, 200);
       assert.equal(r.data.dryRun, true);
-      assert.ok(r.data.steps.some((s) => s.includes('git push -u origin post/smoke-test')));
+      assert.ok(r.data.steps.some((s) => s.includes('git push origin HEAD:refs/heads/post/smoke-test')));
       assert.equal(calls.length, before);
       assert.equal((await jreq(port, 'GET', '/api/posts/smoke-test')).data.meta.draft, true);
+    });
+
+    await ok('failed publish leaves local file unchanged and only drops its own temp branch', async () => {
+      const file = path.join(root, 'src', 'content', 'blog', 'smoke-test.md');
+      const before = await fs.readFile(file, 'utf8');
+      calls.length = 0;
+      failPush = true;
+      const r = await jreq(port, 'POST', '/api/posts/smoke-test/publish', {});
+      failPush = false;
+      assert.equal(r.status, 500);
+      assert.equal(await fs.readFile(file, 'utf8'), before);
+      const flat = calls.map((c) => c.join(' '));
+      assert.ok(flat.some((c) => c.startsWith('git branch -D blog-publish-tmp/smoke-test-')));
+      assert.ok(!flat.some((c) => c.includes('-D post/smoke-test')));
+      assert.ok(flat.some((c) => c.startsWith('git worktree remove --force')));
     });
 
     await ok('publish flow with stubbed runner (no real git/network)', async () => {
       const r = await jreq(port, 'POST', '/api/posts/smoke-test/publish', {});
       assert.equal(r.status, 200, JSON.stringify(r.data));
+      assert.match(r.data.hint, /git pull/);
       assert.equal(r.data.url, 'https://example.invalid/pr/1');
       const flat = calls.map((c) => c.join(' '));
-      assert.ok(flat.some((c) => c.startsWith('git push -u origin post/smoke-test')));
-      assert.ok(flat.some((c) => c.includes('worktree add -b post/smoke-test') && c.endsWith('origin/xyz')));
+      assert.ok(flat.some((c) => c.startsWith('git push origin HEAD:refs/heads/post/smoke-test')));
+      assert.ok(flat.some((c) => c.includes('worktree add -b blog-publish-tmp/smoke-test-') && c.endsWith('origin/xyz')));
       assert.ok(flat.some((c) => c.startsWith('git commit -m blog: publish smoke-test')));
       assert.ok(flat.some((c) => c.startsWith('gh pr create --base xyz --head post/smoke-test')));
       assert.ok(flat.some((c) => c.startsWith('git worktree remove --force')));
-      assert.ok(flat.some((c) => c.startsWith('git branch -D post/smoke-test')));
+      assert.ok(flat.some((c) => c.startsWith('git branch -D blog-publish-tmp/smoke-test-')));
+      assert.ok(!flat.some((c) => c === 'git branch -D post/smoke-test'), 'never deletes a user branch');
       const meta = (await jreq(port, 'GET', '/api/posts/smoke-test')).data.meta;
       assert.notEqual(meta.draft, true);
       assert.equal((await jreq(port, 'POST', '/api/posts/smoke-test/unpublish')).status, 200);
