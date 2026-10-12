@@ -13,7 +13,7 @@ Astro 7 static site (v2), live at alamhanz.xyz since the v2 -> xyz cutover (PR #
 ## Git
 - GitHub: alamhanz/alamhanz.github.io, remote over HTTPS (gh credentials)
 - `xyz` = production branch; pushing or merging into it deploys. `main` is the GitHub default but not used for deploys
-- `xyz` is protected: 1 approval + signed commits + resolved conversations. As the only maintainer, merge PRs on GitHub by ticking "Merge without waiting for requirements (bypass rules)"
+- `xyz` is protected: PR required (0 approvals) + signed commits + resolved conversations. Agent and local commits are unsigned, so merge PRs on GitHub by ticking "Merge without waiting for requirements (bypass rules)"
 - Work: feature branches off `xyz`, PRs into `xyz`
 
 ## Commands
@@ -44,5 +44,5 @@ Astro 7 static site (v2), live at alamhanz.xyz since the v2 -> xyz cutover (PR #
 
 ## Conventions
 - Theme colors: body #F5F5F5, theme #30475E, selected-text #F05454, button #121212; Poppins for headings/UI, Inter for body
-- About page facts come only from the owner's CV; no phone/email/city on the public site
+- About page facts come only from the owner's CV (plus owner-approved location: Tokyo, Japan, and country per employer); no phone/email on the public site
 - Unused v1 files kept on purpose in `legacy/` (old-lyceum.txt, source.txt, unused images)

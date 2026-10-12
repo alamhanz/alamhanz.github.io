@@ -2,16 +2,26 @@
 interface Props {
   role: string;
   org: string;
+  country: string;
   start: string;
   end?: string;
   bullets: string[];
 }
 
-const { role, org, start, end, bullets } = Astro.props;
+const { role, org, country, start, end, bullets } = Astro.props;
+
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const fmt = (ym: string) => {
+  const [y, m] = ym.split('-');
+  return `${months[Number(m) - 1]} ${y}`;
+};
 ---
 
 <li>
-  <p class="mono-sm">{start} .. {end ?? 'now'}</p>
+  <p class="mono-sm period">
+    <span class="dates"><time datetime={start}>{fmt(start)}</time> &ndash; {end ? <time datetime={end}>{fmt(end)}</time> : 'now'}</span>
+    <span class="where">{country}</span>
+  </p>
   <div>
     <h3>
       {role} <span class="org">at {org}</span>

@@ -1,0 +1,23 @@
+---
+import { profile } from '../data/profile';
+
+const rows = Object.entries(profile.json);
+---
+
+<div class="window" role="group" aria-label="Profile summary">
+  <div class="window-bar" aria-hidden="true"><i></i><i></i><i></i><span>profile.ipynb</span></div>
+  <div class="cell">
+    <p class="cell-in"><b>In [1]:</b> <code>alamsyah.describe()</code></p>
+    <p class="cell-out"><b>Out[1]:</b></p>
+    <div class="df-wrap">
+      <table class="df">
+        <thead>
+          <tr><th scope="col"></th><th scope="col">profile</th></tr>
+        </thead>
+        <tbody>
+          {rows.map(([k, v]) => <tr><th scope="row">{k}</th><td>{v}</td></tr>)}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
