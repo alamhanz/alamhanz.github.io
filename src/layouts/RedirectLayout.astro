@@ -1,0 +1,23 @@
+---
+interface Props {
+  title: string;
+  target: string;
+  label: string;
+}
+
+const { title, target, label } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="robots" content="noindex" />
+    <meta http-equiv="refresh" content={`0; URL=${target}`} />
+  </head>
+  <body>
+    <p>Redirecting to <a href={target}>{label}</a></p>
+  </body>
+</html>

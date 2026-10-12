@@ -1,50 +1,117 @@
 name: Personal Web Deployment
 
 on:
-   push:
+  push:
     branches:
       - xyz
 
+permissions:
+  contents: read
+
+concurrency: deploy-prod
+
 jobs:
-  move-rename:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: 'actions/checkout@v4'
-      - id: 'auth'
-        name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@v2'
-        with:
-          credentials_json: '${{ secrets.GCP_CRED}}'
+      - uses: actions/checkout@v4
 
-      - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v2'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Stage (extensionless pages)
+        run: bash scripts/stage-dist.sh dist _stage/site
+
+      - name: Check routes
+        run: node scripts/check-routes.mjs _stage/site
+
+      - id: auth
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_CRED }}'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
         with:
           version: '>= 363.0.0'
 
-      - name: move the files
-        run : |
-          echo "create folder - move all files to new folder"
-          cd ..
-          mkdir to_upload | cp -a alamhanz.github.io/* to_upload/
+      # Excluded from upload and from deletion (the regex also matches bucket objects):
+      # bucket-only images/hello.jpg, images/hello2.jpg, images/hello3.jpg (og:image), about.txt,
+      # and every extensionless page (they are uploaded below with an explicit text/html
+      # content type, so an object is never served with a guessed type).
+      # Pages kept as <name>.html in staging because <name>/ is a directory (blog.html) are
+      # excluded under their staged name as well.
+      - name: Sync assets to bucket
+        run: |
+          EXCLUDE='images/hello[0-9]?\.jpg|about\.txt'
+          while IFS= read -r f; do
+            [ -n "$f" ] && EXCLUDE="$EXCLUDE|$(printf '%s' "$f" | sed 's/[.]/[.]/g')"
+          done < <(cat _stage/extensionless.txt _stage/collisions.txt)
+          gcloud storage rsync _stage/site gs://alamhanz.xyz \
+            --recursive \
+            --delete-unmatched-destination-objects \
+            --exclude="^($EXCLUDE)\$"
 
-      - name: rename the files
-        run : |
-          echo "rename files"
-          cd ../to_upload
-          mv -v about.html about
-          mv -v blog.html blog
-          mv -v cv.html cv
-          mv -v lyceum.html lyceum
-          mv -v mycalendar.html mycalendar
-          rm gha-creds-*.json
+      - name: Upload pages (text/html)
+        run: |
+          B=gs://alamhanz.xyz
+          # Extensionless pages (about, blog, blog/<slug>, cv, mycalendar), uploaded last.
+          while IFS= read -r name; do
+            [ -n "$name" ] || continue
+            src="_stage/site/$name"
+            # blog.html stays .html in staging (blog/ is a directory) but is the object "blog"
+            [ -f "$src" ] || src="$src.html"
+            gcloud storage cp "$src" "$B/$name" \
+              --content-type='text/html; charset=utf-8' \
+              --cache-control='public, max-age=300'
+          done < _stage/extensionless.txt
 
-      - name: bucket upload
-        run : |
-          cd ..
-          echo "upload to bucket .."
-          gcloud storage cp -r to_upload/* gs://alamhanz.xyz/
-          gcloud storage objects update gs://alamhanz.xyz/about --content-type=text/html
-          gcloud storage objects update gs://alamhanz.xyz/blog --content-type=text/html
-          gcloud storage objects update gs://alamhanz.xyz/cv --content-type=text/html
-          gcloud storage objects update gs://alamhanz.xyz/lyceum --content-type=text/html
-          gcloud storage objects update gs://alamhanz.xyz/mycalendar --content-type=text/html
+      - name: Set cache headers
+        run: |
+          B=gs://alamhanz.xyz
+          gcloud storage objects update "$B/index.html" "$B/404.html" \
+            --cache-control='public, max-age=300'
+          gcloud storage objects update "$B/_astro/**" \
+            --cache-control='public, max-age=31536000, immutable'
+          gcloud storage objects update "$B/images/**" \
+            --cache-control='public, max-age=86400'
+          gcloud storage objects update "$B/rss.xml" "$B/sitemap-index.xml" "$B/sitemap-0.xml" \
+            --cache-control='public, max-age=3600'
+
+      - name: Purge Cloudflare cache
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ZONE: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: |
+          if [ -n "$CF_TOKEN" ] && [ -n "$CF_ZONE" ]; then
+            curl -fsS -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE/purge_cache" \
+              -H "Authorization: Bearer $CF_TOKEN" \
+              -H 'Content-Type: application/json' \
+              --data '{"purge_everything":true}'
+          else
+            echo "Cloudflare purge skipped"
+          fi
+
+      - name: Smoke test
+        run: |
+          fail=0
+          for p in / /about; do
+            out="$(curl -sS -o /dev/null -w '%{http_code} %{content_type}' "https://alamhanz.xyz$p")"
+            case "$out" in
+              "200 text/html"*) echo "ok $p: $out" ;;
+              *) echo "::error::$p returned '$out' (expected 200 text/html)"; fail=1 ;;
+            esac
+          done
+          for p in /blog /cv /mycalendar /rss.xml; do
+            curl -fsSI "https://alamhanz.xyz$p" >/dev/null || echo "::warning::$p not reachable yet (CDN lag?)"
+          done
+          exit "$fail"

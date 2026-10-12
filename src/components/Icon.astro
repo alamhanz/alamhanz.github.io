@@ -1,0 +1,65 @@
+---
+// Tabler Icons (outline), inlined at build time. No runtime JS or icon font.
+import arrowRight from '@tabler/icons/outline/arrow-right.svg?raw';
+import brandAws from '@tabler/icons/outline/brand-aws.svg?raw';
+import brandDiscord from '@tabler/icons/outline/brand-discord.svg?raw';
+import brandDocker from '@tabler/icons/outline/brand-docker.svg?raw';
+import brandGithub from '@tabler/icons/outline/brand-github.svg?raw';
+import brandLinkedin from '@tabler/icons/outline/brand-linkedin.svg?raw';
+import brandMedium from '@tabler/icons/outline/brand-medium.svg?raw';
+import brandPython from '@tabler/icons/outline/brand-python.svg?raw';
+import brandX from '@tabler/icons/outline/brand-x.svg?raw';
+import calendarEvent from '@tabler/icons/outline/calendar-event.svg?raw';
+import chartBar from '@tabler/icons/outline/chart-bar.svg?raw';
+import fileCv from '@tabler/icons/outline/file-cv.svg?raw';
+import menu2 from '@tabler/icons/outline/menu-2.svg?raw';
+import rss from '@tabler/icons/outline/rss.svg?raw';
+import x from '@tabler/icons/outline/x.svg?raw';
+
+const icons: Record<string, string> = {
+  'arrow-right': arrowRight,
+  'brand-aws': brandAws,
+  'brand-discord': brandDiscord,
+  'brand-docker': brandDocker,
+  'brand-github': brandGithub,
+  'brand-linkedin': brandLinkedin,
+  'brand-medium': brandMedium,
+  'brand-python': brandPython,
+  'brand-x': brandX,
+  'calendar-event': calendarEvent,
+  'chart-bar': chartBar,
+  'file-cv': fileCv,
+  'menu-2': menu2,
+  rss,
+  x,
+};
+
+interface Props {
+  name: string;
+  class?: string;
+}
+
+const { name, class: className = 'size-6' } = Astro.props;
+const source = icons[name];
+if (!source) throw new Error(`Unknown icon: ${name}`);
+
+// Keep only the inner shapes; re-wrap with a thin stroke and our own sizing.
+const inner = source
+  .replace(/^[\s\S]*?<svg[\s\S]*?>/, '')
+  .replace(/<\/svg>\s*$/, '')
+  .replace(/<path stroke="none"[^>]*\/>/, '')
+  .trim();
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.25"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class={className}
+  aria-hidden="true"
+  set:html={inner}
+/>

@@ -1,0 +1,72 @@
+---
+import Icon from './Icon.astro';
+
+const path = Astro.url.pathname.replace(/(\/index)?(\.html)?\/?$/, '') || '/';
+const links = [
+  { href: '/', label: 'home' },
+  { href: '/about', label: 'about' },
+  { href: '/blog', label: 'blog' },
+  { href: '/cv', label: 'CV' },
+];
+const isCurrent = (href: string) => (href === '/' ? path === '/' : path === href || path.startsWith(`${href}/`));
+---
+
+<header class="py-5 md:py-3">
+  <nav aria-label="Primary" class="mx-auto flex w-full max-w-5xl items-center justify-between px-5">
+    <div class="font-poppins text-xl 2xl:text-2xl tracking-widest">
+      <a href="/">
+        <span class="px-2 py-1 tracking-widest bg-theme text-selected-text hover:text-body hover:bg-selected-text"
+          >alamsyah</span
+        >
+        <span>hanza</span>
+      </a>
+    </div>
+
+    <button id="toggle" type="button" class="md:hidden" aria-controls="nav" aria-expanded="false" aria-label="Toggle menu">
+      <Icon name="menu-2" class="size-7 toggle-open" />
+      <Icon name="x" class="size-7 toggle-close hidden" />
+    </button>
+
+    <ul
+      id="nav"
+      class="fixed z-40 py-8 top-14 bottom-0 -right-full invisible md:visible w-28 bg-body shadow md:shadow-none md:bg-transparent md:w-auto md:static md:py-0 transition-all text-sm md:text-lg md:flex"
+    >
+      {
+        links.map((l) => (
+          <li>
+            <a class="nav-link" href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>
+              {l.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</header>
+
+<script>
+  const toggle = document.getElementById('toggle');
+  const nav = document.getElementById('nav');
+
+  if (toggle && nav) {
+    const setOpen = (open: boolean) => {
+      nav.classList.toggle('-right-full', !open);
+      nav.classList.toggle('right-0', open);
+      nav.classList.toggle('invisible', !open);
+      toggle.querySelector('.toggle-open')?.classList.toggle('hidden', open);
+      toggle.querySelector('.toggle-close')?.classList.toggle('hidden', !open);
+      toggle.setAttribute('aria-expanded', String(open));
+    };
+
+    toggle.addEventListener('click', () => {
+      setOpen(toggle.getAttribute('aria-expanded') !== 'true');
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+  }
+</script>

@@ -1,0 +1,22 @@
+---
+import { site } from '../data/site';
+import Icon from './Icon.astro';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className = 'justify-center md:justify-start' } = Astro.props;
+---
+
+<ul class:list={['flex gap-1 md:gap-2', className]}>
+  {
+    site.socials.map((s) => (
+      <li>
+        <a href={s.href} aria-label={s.label} rel="noopener" class="icon-btn">
+          <Icon name={s.icon} class="size-7" />
+        </a>
+      </li>
+    ))
+  }
+</ul>

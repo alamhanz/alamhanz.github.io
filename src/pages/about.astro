@@ -1,0 +1,107 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ExperienceItem from '../components/ExperienceItem.astro';
+import SocialLinks from '../components/SocialLinks.astro';
+import Icon from '../components/Icon.astro';
+import { profile } from '../data/profile';
+---
+
+<BaseLayout title="About | Alamsyah Hanza" description={profile.metaDescription} path="/about">
+  <section aria-labelledby="about-me" class="flex flex-col gap-6 md:flex-row md:items-start md:gap-10">
+    <img
+      class="size-24 md:size-32 shrink-0 rounded-full object-cover"
+      src="/images/face.jpg"
+      alt="Portrait of Alamsyah Hanza"
+      width="128"
+      height="128"
+    />
+    <div>
+      <h1 id="about-me" class="font-poppins font-bold text-4xl md:text-6xl mb-3">{profile.name}</h1>
+      <p class="font-poppins font-semibold text-lg md:text-2xl mb-4">{profile.headline}</p>
+      <p class="max-w-[68ch] mb-4 text-lg">{profile.valueStatement}</p>
+      <p class="max-w-[68ch]">{profile.summary}</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="glance">
+    <h2 id="glance" class="h2">At a glance</h2>
+    <dl class="grid gap-5 md:grid-cols-2">
+      {
+        profile.atAGlance.map((item) => (
+          <div class="card">
+            <dt class="font-poppins font-semibold text-lg mb-1">{item.label}</dt>
+            <dd>{item.value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section aria-labelledby="achievements">
+    <h2 id="achievements" class="h2">Key achievements</h2>
+    <ul class="list-disc pl-5 space-y-2 leading-relaxed">
+      {profile.achievements.map((a) => <li>{a}</li>)}
+    </ul>
+  </section>
+
+  <section aria-labelledby="experience">
+    <h2 id="experience" class="h2">Experience</h2>
+    <ol class="ml-1">
+      {profile.experience.map((e) => <ExperienceItem {...e} />)}
+    </ol>
+  </section>
+
+  <section aria-labelledby="skills">
+    <h2 id="skills" class="h2">Skills</h2>
+    <div class="grid gap-5 md:grid-cols-2">
+      {
+        profile.skillGroups.map((g) => (
+          <div class="card">
+            <h3 class="font-poppins font-semibold text-lg mb-1">{g.title}</h3>
+            <p>{g.text}</p>
+          </div>
+        ))
+      }
+    </div>
+    <ul class="flex flex-wrap justify-center gap-6 md:gap-10 pt-12">
+      {
+        profile.skillLogos.map((logo) => (
+          <li class="flex flex-col items-center text-center text-xs md:text-sm">
+            {logo.image ? (
+              <img src={logo.image} alt={logo.alt} class="size-10 md:size-14 object-contain" width="56" height="56" loading="lazy" />
+            ) : (
+              <span class="flex size-10 md:size-14 items-center justify-center" role="img" aria-label={logo.alt}>
+                <Icon name={logo.icon ?? ''} class="size-9 md:size-12" />
+              </span>
+            )}
+            <span class="mt-2">{logo.name}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section aria-labelledby="education">
+    <h2 id="education" class="h2">Education and certificates</h2>
+    <h3 class="font-poppins font-semibold text-lg md:text-xl">
+      {profile.education.degree}, {profile.education.school}
+    </h3>
+    <p class="mb-4">{profile.education.detail}</p>
+    <ul class="list-disc pl-5 space-y-1">
+      {profile.certificates.map((c) => <li>{c}</li>)}
+    </ul>
+  </section>
+
+  <section aria-labelledby="contact">
+    <h2 id="contact" class="h2">Let's talk</h2>
+    <p class="mb-6">{profile.closing}</p>
+    <div class="flex flex-col items-start gap-6 md:flex-row md:items-center md:gap-8">
+      <a class="btn" href="/mycalendar">
+        <Icon name="calendar-event" class="size-6" />
+        Let's Talk
+      </a>
+      <a class="text-link" href="/cv">CV</a>
+      <SocialLinks />
+    </div>
+  </section>
+</BaseLayout>
