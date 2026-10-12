@@ -18,7 +18,7 @@ const IMAGE_ACCEPT = '.png,.jpg,.jpeg,.webp,.gif,.avif,.svg,image/png,image/jpeg
  *   upload(File) -> Promise<{ path, markdown }>   onChange() runs on user edits only
  * Returns { getValue, pendingUploads, uploadsDone, setValue, setSlug, setMode, focus, destroy, insertImages, view }.
  */
-export function createEditor({ parent, doc = '', slug = '', upload, onChange = () => {}, onError = () => {} }) {
+export function createEditor({ parent, doc = '', slug = '', upload, onChange = () => {}, onError = () => {}, onUploadsChange = () => {} }) {
   const live = new Compartment();
   const slugCompartment = new Compartment();
   let mode = 'live';
@@ -27,8 +27,12 @@ export function createEditor({ parent, doc = '', slug = '', upload, onChange = (
   // uploads in flight: their `![Uploading N...]()` placeholder must not be saved
   const pending = new Set();
   const track = (p) => {
-    const done = p.finally(() => pending.delete(done));
+    const done = p.finally(() => {
+      pending.delete(done);
+      onUploadsChange();
+    });
     pending.add(done);
+    onUploadsChange();
     return done;
   };
 

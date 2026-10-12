@@ -20,7 +20,8 @@ async function route() {
   if (previous) {
     // the editor flushes its edits first; if that fails the user stays on the page with the error and Retry
     if (!(await previous.canLeave())) {
-      if (token === routeToken) history.replaceState(null, '', shownHash);
+      // push (not replace) so the entry the user navigated to is kept and the stack stays consistent
+      if (token === routeToken) history.pushState(null, '', shownHash);
       return;
     }
     if (token !== routeToken) return;

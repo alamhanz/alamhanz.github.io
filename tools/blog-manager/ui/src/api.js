@@ -1,7 +1,12 @@
 // Shared helpers: API calls, DOM builder, slugify, and the status the header polls.
 
 export async function api(path, opts = {}) {
-  const res = await fetch(`/api${path}`, opts);
+  let res;
+  try {
+    res = await fetch(`/api${path}`, opts);
+  } catch (e) {
+    throw new Error(e.name === 'TimeoutError' ? 'The request timed out.' : e.message);
+  }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
   return data;
@@ -25,8 +30,11 @@ export const status = { astroPort: 4321, astroUp: false, ghOk: false };
 
 export const previewUrl = (slug) => `http://127.0.0.1:${status.astroPort}/blog/${slug}`;
 
+// a stalled upload must not block save/leave/rename/publish forever (globalThis override is for the UI test)
+const uploadTimeoutMs = () => globalThis.__uploadTimeoutMs ?? 60000;
+
 export const uploadImage = (slug, file) =>
-  api(`/posts/${slug}/images?name=${encodeURIComponent(file.name || 'image.png')}`, { method: 'PUT', body: file });
+  api(`/posts/${slug}/images?name=${encodeURIComponent(file.name || 'image.png')}`, { method: 'PUT', body: file, signal: AbortSignal.timeout(uploadTimeoutMs()) });
 
 /** Local image of a post (cover or inline) through the API, with an optional cache buster. */
 export const imageSrc = (slug, mdPath, bust) => (mdPath ? `/api/posts/${slug}/images/${String(mdPath).split('/').pop()}${bust ? `?t=${bust}` : ''}` : '');

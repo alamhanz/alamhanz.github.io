@@ -308,6 +308,48 @@ try {
     forgetNetworkNoise();
   });
 
+  await step('Back with a failing save stays on the page; "Discard changes and leave" is the way out', async () => {
+    await page.goto(`${base}/#/`);
+    await page.waitForSelector('.stabs');
+    await page.goto(`${base}/#/edit/media-story`);
+    await page.waitForSelector('.cm-content');
+    const before = await read('media-story.md');
+    await page.route('**/api/posts/media-story', (route) => (isPostPut(route) ? route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":"disk on fire"}' }) : route.continue()));
+    await page.locator('.cm-line').first().click();
+    await page.keyboard.press('End');
+    await page.keyboard.type(' DISCARDED');
+    await page.goBack();
+    await page.waitForSelector('.save-state.err');
+    assert.match(page.url(), /#\/edit\/media-story$/);
+    page.once('dialog', (d) => d.accept());
+    await page.click('.save-state button:has-text("Discard changes and leave")');
+    await page.waitForSelector('.stabs');
+    await page.unroute('**/api/posts/media-story');
+    assert.match(page.url(), /#\/$/);
+    assert.equal(await read('media-story.md'), before);
+    forgetNetworkNoise();
+  });
+
+  await step('a stalled upload times out: status shows Uploading, placeholder removed, save not blocked', async () => {
+    await page.goto(`${base}/#/edit/media-story`);
+    await page.waitForSelector('.cm-content');
+    await page.evaluate(() => {
+      globalThis.__uploadTimeoutMs = 800;
+    });
+    await page.route('**/api/posts/media-story/images*', () => new Promise(() => {})); // never answers
+    await page.locator('.cm-line').first().click();
+    await page.keyboard.press('Control+End');
+    await pasteImage('stuck.png', PNG);
+    await page.waitForSelector('text=Uploading...');
+    await page.waitForSelector('.flash:has-text("Image upload failed")', { timeout: 5000 });
+    await page.waitForFunction(() => !document.querySelector('.cm-content').textContent.includes('Uploading'));
+    await page.unroute('**/api/posts/media-story/images*');
+    await goBack();
+    await page.waitForSelector('.stabs', { timeout: 5000 });
+    assert.doesNotMatch(await read('media-story.md'), /Uploading|stuck\.png/);
+    forgetNetworkNoise();
+  });
+
   await step('selection toolbar Link flow wraps the selection in a Markdown link', async () => {
     await page.goto(`${base}/#/edit/media-story`);
     await page.waitForSelector('.cm-content');

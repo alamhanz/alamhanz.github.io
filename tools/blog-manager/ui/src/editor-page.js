@@ -22,6 +22,7 @@ export function mountEditor(view, slug, { navigate }) {
   let timer = null;
   let saving = null;
   let failed = '';
+  let discarded = false;
   let savedAt = '';
   let flashTimer = null;
   let coverBust = '';
@@ -49,10 +50,22 @@ export function mountEditor(view, slug, { navigate }) {
       s.classList.add('err');
       const retry = el('button', { type: 'button', className: 'link', textContent: 'Retry' });
       retry.addEventListener('click', () => save());
-      s.append(`Save failed: ${failed} `, retry);
+      const discard = el('button', { type: 'button', className: 'link', textContent: 'Discard changes and leave' });
+      discard.addEventListener('click', discardAndLeave);
+      s.append(`Save failed: ${failed} `, retry, ' ', discard);
     } else if (saving) s.textContent = 'Saving...';
+    else if (editor?.pendingUploads()) s.textContent = 'Uploading...';
     else if (dirty) s.textContent = 'Unsaved changes';
     else s.textContent = savedAt ? `Saved ${savedAt}` : 'Saved';
+  }
+
+  // way out when saving can never succeed (invalid post, server gone)
+  function discardAndLeave() {
+    if (!window.confirm('Discard the unsaved changes to this story and leave?')) return;
+    discarded = true;
+    dirty = false;
+    failed = '';
+    navigate('#/');
   }
 
   function flash(message) {
@@ -80,7 +93,7 @@ export function mountEditor(view, slug, { navigate }) {
   async function save() {
     clearTimeout(timer);
     for (;;) {
-      if (!meta || !editor) return;
+      if (!meta || !editor || discarded) return;
       if (saving) await saving;
       else if (editor.pendingUploads()) await editor.uploadsDone();
       else break;
@@ -94,8 +107,10 @@ export function mountEditor(view, slug, { navigate }) {
         await api(`/posts/${slug}`, payload);
         savedAt = clock();
       } catch (e) {
-        dirty = true;
-        failed = e.message;
+        if (!discarded) {
+          dirty = true;
+          failed = e.message;
+        }
       } finally {
         saving = null;
         renderStatus();
@@ -274,7 +289,9 @@ export function mountEditor(view, slug, { navigate }) {
           next().focus();
         }
       });
-      ta.addEventListener('blur', () => save());
+      ta.addEventListener('blur', () => {
+        if (!failed) save();
+      });
     }
     const body = el('div', { className: 'body' });
     const canvas = el('div', { className: 'canvas' }, cover, coverFile, title, subtitle, body);
@@ -361,9 +378,10 @@ export function mountEditor(view, slug, { navigate }) {
       upload: (file) => uploadImage(slug, file),
       onChange: markDirty,
       onError: flash,
+      onUploadsChange: renderStatus,
     });
     body.addEventListener('focusout', (ev) => {
-      if (!body.contains(ev.relatedTarget)) save();
+      if (!failed && !body.contains(ev.relatedTarget)) save();
     });
     mdToggle.addEventListener('click', () => {
       const on = mdToggle.getAttribute('aria-pressed') !== 'true';
@@ -388,7 +406,7 @@ export function mountEditor(view, slug, { navigate }) {
     // flush pending edits before leaving; false means they could not be saved and the user stays here
     async canLeave() {
       await save();
-      if (!dirty && !failed) return true;
+      if (discarded || (!dirty && !failed)) return true;
       flash('Your latest changes are not saved. Retry before leaving.');
       return false;
     },
