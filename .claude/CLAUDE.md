@@ -25,7 +25,7 @@ Astro 7 static site (v2), live at alamhanz.xyz since the v2 -> xyz cutover (PR #
 ## Blog manager (local only)
 - `npm run blog` starts astro dev (127.0.0.1:4321) plus the manager UI (127.0.0.1:4322); Ctrl+C stops both. Code in `tools/blog-manager/` (not built, not deployed); README there
 - Publish = PR to `xyz` from branch `post/<slug>` via temp worktree (needs `gh auth login`); images in `src/assets/blog/<slug>/`, optional `cover` + `coverAlt` in front matter (og:image cropped 1200x630)
-- Tests: `npm run blog:smoke`
+- Tests: `npm run blog:smoke`; `npm run blog:ui-test` (playwright-core on local Edge/Chrome, local only)
 
 ## Deploy
 - `.github/workflows/deploy_web.yml` on push to `xyz`: build, `scripts/stage-dist.sh` (every `dist/**/*.html` except index/404 becomes an extensionless object; `blog.html` stays `.html` locally because `blog/` is a directory and is uploaded to object `blog` by the workflow), `gcloud storage rsync --delete-unmatched-destination-objects` to `gs://alamhanz.xyz`, then content-type and cache headers

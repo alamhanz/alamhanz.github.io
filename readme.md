@@ -14,6 +14,7 @@ npm run preview        # serve dist/ locally
 npm run check:routes   # stage dist/ like the deploy does and verify every internal link
 npm run blog           # local blog manager (see below)
 npm run blog:smoke     # blog manager tests
+npm run blog:ui-test   # blog manager browser test (needs Edge or Chrome)
 ```
 
 ## Structure
@@ -57,7 +58,7 @@ npm run blog
 ```
 
 - Manager UI: http://127.0.0.1:4322; site preview (astro dev): http://127.0.0.1:4321. Ctrl+C stops both.
-- Write: create a draft, edit title/description/Markdown with live preview (autosaves). Upload, drag or paste images into `src/assets/blog/<slug>/`; pick one as the cover.
+- Write: create a draft and write in a Medium-style editor (formatting shows inline, select text for the toolbar, "+" on an empty line; autosaves). Upload, drag or paste images into `src/assets/blog/<slug>/`; pick one as the cover.
 - Publish: opens a PR into `xyz` from branch `post/<slug>` (via a temporary worktree; your checkout is untouched) and shows the PR link. Needs `gh auth login`. The post goes live when that PR is merged; commits are unsigned, so merge with bypass: `gh pr merge <n> --merge --admin`.
 - After the post PR is merged: delete the local copy (Delete button in the UI) before `git pull`, otherwise the pull clashes with the same files.
 - If the terminal was closed instead of Ctrl+C, an astro process may still hold port 4321: `Get-Process node | Stop-Process`.
