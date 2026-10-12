@@ -38,6 +38,7 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
   }
   body {
     font-family: var(--font-inter);
@@ -184,6 +185,22 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+  }
+  .mark-name {
+    transition:
+      opacity 280ms ease,
+      transform 280ms ease,
+      visibility 280ms;
+  }
+  .mark-name[data-reveal='hidden'] {
+    opacity: 0;
+    transform: translateX(-0.5rem);
+    visibility: hidden;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mark-name {
+      transition: none;
+    }
   }
   .mark::before {
     content: '';
