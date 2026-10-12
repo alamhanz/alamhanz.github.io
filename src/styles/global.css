@@ -5,7 +5,7 @@
   Class contract (concept D). Layout: .wrap .sect .sect-head .label .hero .hero-grid
   Text: .link .prompt .hl .lede .role .vs .sub .mono-sm
   Buttons: .btn (accent) .btn-ink  .actions   Tags: .tags .tag
-  Window: .window .window-bar .json (.k .s .p)
+  Window: .window .window-bar .cell .df
   Lists: .focus .index .facts .jobs .cur .skills .tools .edu .older
   Blocks: .cv-note .about-intro .blog-head .blog-list .site-head .nav .mark .menu-btn
           .site-foot .foot-row .foot-links .socials
@@ -45,6 +45,14 @@
     font-size: 1.0625rem;
     line-height: 1.7;
     -webkit-font-smoothing: antialiased;
+    background-image: linear-gradient(rgba(245, 245, 245, 0.92), rgba(245, 245, 245, 0.92)), url('/images/keyboard-bg.jpg');
+    background-size: cover;
+    background-position: center;
+  }
+  @media (min-width: 48rem) {
+    body {
+      background-attachment: fixed;
+    }
   }
   h1,
   h2,
@@ -119,7 +127,7 @@
     color: var(--color-theme-light);
   }
   .prompt::before {
-    content: '$ ';
+    content: 'In [ ]: ';
     color: var(--color-accent);
   }
 
@@ -252,6 +260,19 @@
     background: radial-gradient(56rem 28rem at 88% -10%, rgba(48, 71, 94, 0.6), transparent 60%), var(--color-night);
     color: var(--color-on-dark);
     padding: clamp(3rem, 8vw, 6rem) 0 clamp(3rem, 7vw, 5rem);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-chart {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.16;
+    pointer-events: none;
+  }
+  .hero .wrap {
+    position: relative;
   }
   .hero-grid {
     display: grid;
@@ -322,23 +343,56 @@
   .window-bar span {
     margin-left: 0.5rem;
   }
-  .json {
+  .cell {
+    padding: 1rem 1.1rem 1.3rem;
+    font: 400 0.8125rem/1.6 var(--font-mono);
+  }
+  .cell p {
     margin: 0;
-    padding: 1.1rem 1.1rem 1.3rem;
-    font: 400 0.8125rem/1.75 var(--font-mono);
+  }
+  .cell-in code {
     color: var(--color-on-dark);
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
+  }
+  .cell-in b,
+  .cell-out b {
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+  .cell .cell-out {
+    margin-top: 0.9rem;
+  }
+  .df-wrap {
+    margin-top: 0.5rem;
     overflow-x: auto;
   }
-  .json .k {
+  .df {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--color-on-dark);
+  }
+  .df th,
+  .df td {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.4rem 0.7rem;
+    border-bottom: 1px solid var(--color-line-dark);
+    overflow-wrap: anywhere;
+  }
+  .df thead th {
+    color: var(--color-on-dark-2);
+    font-weight: 500;
+    border-bottom: 1px solid var(--color-theme-light);
+  }
+  .df tbody th {
     color: var(--color-theme-light);
+    font-weight: 600;
+    white-space: nowrap;
+    width: 1%;
   }
-  .json .s {
-    color: var(--color-json-string);
-  }
-  .json .p {
-    color: var(--color-json-punct);
+  .df tbody tr:last-child > * {
+    border-bottom: 0;
   }
 
   /* sections */

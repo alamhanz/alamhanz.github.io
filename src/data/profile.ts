@@ -110,11 +110,11 @@ export const profile = {
   ] satisfies Experience[],
   skillGroups: [
     {
-      title: 'analysis_and_ml',
+      title: 'modelling',
       items: ['Python (advanced)', 'SQL (expert)', 'machine learning', 'experiment design', 'pandas', 'Jupyter'],
     },
-    { title: 'data_and_cloud', items: ['ETL', 'Google Cloud', 'AWS', 'Docker', 'GitHub'] },
-    { title: 'bi_and_viz', items: ['Tableau', 'Google Data Studio', 'Amazon QuickSight'] },
+    { title: 'data', items: ['ETL', 'Google Cloud', 'AWS', 'Docker', 'GitHub'] },
+    { title: 'bi', items: ['Tableau', 'Google Data Studio', 'Amazon QuickSight'] },
     { title: 'people', items: ['stakeholder management', 'training and mentoring', 'project management'] },
   ],
   education: {
