@@ -7,6 +7,7 @@ import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { editorUnit } from './editor-unit.mjs';
 import { sanitizeName } from './images.mjs';
 import { HttpError, REPO_ROOT, assertSlug, parse, safeJoin, serialize, slugify } from './posts.mjs';
 import { publishPost } from './publish.mjs';
@@ -32,6 +33,7 @@ function ok(name, fn) {
 const throws400 = (fn) => assert.throws(fn, (e) => e instanceof HttpError && e.status === 400);
 
 async function unit() {
+  await editorUnit(ok);
   await ok('slug validator', () => {
     for (const s of ['a', 'hello-world', 'a1-b2', 'x'.repeat(80)]) assertSlug(s);
     for (const s of ['', 'A', '../x', '%2e%2e', 'a/b', '..\\x', 'C:\\x', '/etc/passwd', 'a--b', '-a', 'a-', 'x'.repeat(81), 'a b', null, 'con', 'nul', 'com1', 'lpt9']) throws400(() => assertSlug(s));
@@ -80,19 +82,20 @@ async function unit() {
     await new Promise((r) => tcp.close(r));
     assert.equal(await astroReachable(port, 500), false);
   });
-  await ok('UI: editor slug is read-only but explained, new-post slug is editable', async () => {
-    const html = await fs.readFile(path.join(path.dirname(fileURLToPath(import.meta.url)), 'ui', 'index.html'), 'utf8');
+  await ok('UI: new-post slug is editable; editor slug is editable only for drafts (rename) and explained', async () => {
+    const here = path.dirname(fileURLToPath(import.meta.url));
+    const html = await fs.readFile(path.join(here, 'ui', 'index.html'), 'utf8');
     const tag = (id) => new RegExp(`<input[^>]*id="${id}"[^>]*>`).exec(html)?.[0] ?? '';
-    assert.match(tag('f-slug'), /\breadonly\b/);
-    assert.match(tag('f-slug'), /title="[^"]+"/);
-    assert.match(html, /class="hint"/);
-    assert.doesNotMatch(tag('n-slug'), /\b(readonly|disabled)\b/);
+    assert.doesNotMatch(tag('n-slug'), /(readonly|disabled)/);
+    const page = await fs.readFile(path.join(here, 'ui', 'src', 'editor-page.js'), 'utf8');
+    assert.match(page, /readOnly: !isDraft/);
+    assert.match(page, /className: 'hint'/);
   });
 }
 
 function request(port, method, urlPath, { body, headers = {} } = {}) {
   return new Promise((resolve, reject) => {
-    const req = http.request({ host: '127.0.0.1', port, method, path: urlPath, headers: { Host: `127.0.0.1:${port}`, ...headers } }, (res) => {
+    const req = http.request({ host: '127.0.0.1', port, agent: false, method, path: urlPath, headers: { Host: `127.0.0.1:${port}`, ...headers } }, (res) => {
       const chunks = [];
       res.on('data', (c) => chunks.push(c));
       res.on('end', () => {
@@ -176,6 +179,21 @@ async function serverTests() {
       assert.equal((await request(port, 'GET', '/api/posts/smoke-test/images/v.svg')).headers['content-security-policy'], 'sandbox');
     });
 
+    await ok('image upload never overwrites: same name gets -2, -3', async () => {
+      const a = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+      const b = Buffer.concat([a, Buffer.from('b')]);
+      const c = Buffer.concat([a, Buffer.from('c')]);
+      const r1 = await request(port, 'PUT', '/api/posts/smoke-test/images?name=image.png', { body: a });
+      const r2 = await request(port, 'PUT', '/api/posts/smoke-test/images?name=image.png', { body: b });
+      const r3 = await request(port, 'PUT', '/api/posts/smoke-test/images?name=Image.PNG', { body: c });
+      assert.deepEqual([r1.data.path, r2.data.path, r3.data.path].map((p) => p.split('/').pop()), ['image.png', 'image-2.png', 'image-3.png']);
+      for (const [file, want] of [['image.png', a], ['image-2.png', b], ['image-3.png', c]]) {
+        const got = await request(port, 'GET', `/api/posts/smoke-test/images/${file}`);
+        assert.equal(got.status, 200);
+        assert.ok(got.raw.equals(want), `${file} content`);
+      }
+    });
+
     await ok('traversal and bad slugs rejected with 400', async () => {
       for (const s of ['..', '%2e%2e', 'a%2fb', '..%5cx', '%2e%2e%2f%2e%2e%2fpackage.json', 'C%3A%5Cx', 'A', 'a%00b']) {
         const r = await jreq(port, 'GET', `/api/posts/${s}`);
@@ -193,8 +211,42 @@ async function serverTests() {
       assert.equal((await jreq(port, 'POST', '/api/posts', { title: 'Same Origin' }, { Origin: `http://127.0.0.1:${port}` })).status, 201);
       assert.equal((await jreq(port, 'DELETE', '/api/posts/same-origin')).status, 200);
       assert.equal((await request(port, 'GET', '/', {})).status, 200);
-      assert.equal((await request(port, 'GET', '/vendor/easymde.min.js', {})).status, 200);
+      assert.equal((await request(port, 'GET', '/vendor/easymde.min.js', {})).status, 404);
       assert.equal((await request(port, 'GET', '/..%2fpackage.json', {})).status, 404);
+    });
+
+    await ok('/app.js serves the bundle, / sends a strict CSP', async () => {
+      const js = await request(port, 'GET', '/app.js');
+      assert.equal(js.status, 200);
+      assert.match(js.headers['content-type'], /^text\/javascript/);
+      assert.ok(js.raw.length > 0);
+      assert.equal((await request(port, 'GET', '/app.js', { headers: { Host: 'evil.example' } })).status, 403);
+      const csp = (await request(port, 'GET', '/')).headers['content-security-policy'];
+      for (const d of ["default-src 'self'", "script-src 'self'", "font-src 'self'", "connect-src 'self'", "object-src 'none'", "frame-ancestors 'none'"]) {
+        assert.ok(csp.includes(d), `CSP missing ${d}`);
+      }
+      assert.ok(!/script-src[^;]*unsafe/.test(csp), 'script-src must not allow unsafe');
+      assert.ok(!/https?:\/\/(?!(127\.0\.0\.1|localhost):)/.test(csp), 'no third-party origins');
+    });
+
+    await ok('/fonts serves only allowlisted woff2 files', async () => {
+      const f = await request(port, 'GET', '/fonts/poppins-latin-600-normal.woff2');
+      assert.equal(f.status, 200);
+      assert.equal(f.headers['content-type'], 'font/woff2');
+      assert.equal(f.raw.subarray(0, 4).toString('latin1'), 'wOF2');
+      assert.equal((await request(port, 'GET', '/fonts/inter-latin-wght-normal.woff2')).status, 200);
+      assert.equal((await request(port, 'GET', '/fonts/nope.woff2')).status, 404);
+      for (const bad of ['..%2fpackage.json', '..%2f..%2f..%2fpackage.json', '%2e%2e%2fpackage.json', '..%5cpackage.json', '../package.json', 'poppins-latin-600-normal.woff', 'poppins-latin-600-normal.woff2%00.png', 'Poppins.woff2', '.woff2', '']) {
+        const r = await request(port, 'GET', `/fonts/${bad}`);
+        assert.ok([400, 404].includes(r.status), `/fonts/${bad} -> ${r.status}`);
+      }
+    });
+
+    await ok('listing has description, updatedDate and words', async () => {
+      const item = (await jreq(port, 'GET', '/api/posts')).data.find((p) => p.slug === 'smoke-test');
+      assert.equal(item.description, 'new: desc');
+      assert.equal(item.words, 1);
+      assert.equal(item.updatedDate, null);
     });
 
     await ok('cover must be a real image file in the post folder', async () => {
@@ -335,6 +387,82 @@ async function serverTests() {
       } finally {
         up.closeAllConnections();
         up.close();
+      }
+    });
+
+    await ok('rename: draft moves file and images, rewrites paths, original gone', async () => {
+      const blog = path.join(root, 'src', 'content', 'blog');
+      assert.equal((await jreq(port, 'POST', '/api/posts', { title: 'Old Name', slug: 'old-name', description: 'd' })).status, 201);
+      const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+      await request(port, 'PUT', '/api/posts/old-name/images?name=cover.png', { body: png });
+      await request(port, 'PUT', '/api/posts/old-name/images?name=pic.png', { body: png });
+      const meta = (await jreq(port, 'GET', '/api/posts/old-name')).data.meta;
+      const body = 'Intro ![](../../assets/blog/old-name/pic.png)\n\n![x](../../assets/blog/other/keep.png)\n';
+      await jreq(port, 'PUT', '/api/posts/old-name', { meta: { ...meta, cover: '../../assets/blog/old-name/cover.png', coverAlt: 'alt' }, body });
+      const r = await jreq(port, 'POST', '/api/posts/old-name/rename', { slug: 'new-name' });
+      assert.equal(r.status, 200);
+      assert.equal(r.data.slug, 'new-name');
+      await assert.rejects(fs.access(path.join(blog, 'old-name.md')));
+      await assert.rejects(fs.access(path.join(root, 'src', 'assets', 'blog', 'old-name')));
+      await fs.access(path.join(root, 'src', 'assets', 'blog', 'new-name', 'pic.png'));
+      const got = (await jreq(port, 'GET', '/api/posts/new-name')).data;
+      assert.equal(got.meta.cover, '../../assets/blog/new-name/cover.png');
+      assert.equal(got.meta.draft, true);
+      assert.equal(got.body, 'Intro ![](../../assets/blog/new-name/pic.png)\n\n![x](../../assets/blog/other/keep.png)\n');
+      assert.equal((await jreq(port, 'GET', '/api/posts/old-name')).status, 404);
+      assert.equal((await request(port, 'GET', '/api/posts/new-name/images/pic.png')).status, 200);
+    });
+
+    await ok('rename refuses published posts, existing targets, bad slugs and traversal', async () => {
+      const blog = path.join(root, 'src', 'content', 'blog');
+      const rename = (from, slug, headers) => jreq(port, 'POST', `/api/posts/${from}/rename`, { slug }, headers);
+      await jreq(port, 'POST', '/api/posts', { title: 'Other One', slug: 'other-one' });
+      // existing target (post file, and a leftover image folder)
+      let r = await rename('new-name', 'other-one');
+      assert.equal(r.status, 409);
+      await fs.mkdir(path.join(root, 'src', 'assets', 'blog', 'free-name'), { recursive: true });
+      assert.equal((await rename('new-name', 'free-name')).status, 409);
+      await fs.rm(path.join(root, 'src', 'assets', 'blog', 'free-name'), { recursive: true });
+      // bad slugs and traversal never touch the disk
+      const before = (await fs.readdir(blog)).sort();
+      for (const bad of ['', 'Bad Slug', '../escape', '..\\escape', 'a/b', '%2e%2e', 'a--b', 'con', null, 5, 'x'.repeat(81)]) {
+        r = await rename('new-name', bad);
+        assert.equal(r.status, 400, `slug ${JSON.stringify(bad)} -> ${r.status}`);
+      }
+      assert.equal((await rename('new-name', 'new-name')).status, 400);
+      assert.equal((await rename('..%2f..%2fpackage', 'ok-name')).status, 400);
+      assert.equal((await rename('missing-post', 'ok-name')).status, 404);
+      assert.equal((await rename('new-name', 'ok-name', { Origin: 'http://evil.example' })).status, 403);
+      assert.deepEqual((await fs.readdir(blog)).sort(), before);
+      // published posts are refused
+      const meta = (await jreq(port, 'GET', '/api/posts/other-one')).data.meta;
+      await fs.writeFile(path.join(blog, 'other-one.md'), serialize({ ...meta, draft: false }, 'Live\n'));
+      r = await rename('other-one', 'renamed-live');
+      assert.equal(r.status, 409);
+      assert.match(r.data.error, /Only drafts/);
+      await fs.access(path.join(blog, 'other-one.md'));
+      await assert.rejects(fs.access(path.join(blog, 'renamed-live.md')));
+      assert.equal((await jreq(port, 'DELETE', '/api/posts/other-one')).status, 200);
+      assert.equal((await jreq(port, 'DELETE', '/api/posts/new-name')).status, 200);
+    });
+
+    await ok('round-trip fixtures: GET then PUT unchanged leaves the file equal to serialize(parse(original))', async () => {
+      const dir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures');
+      const names = (await fs.readdir(dir)).filter((n) => /^roundtrip-.*\.md$/.test(n));
+      assert.ok(names.length >= 2, 'fixtures present');
+      for (const name of names) {
+        const slug = name.replace(/\.md$/, '');
+        const dest = path.join(root, 'src', 'content', 'blog', name);
+        const original = await fs.readFile(path.join(dir, name), 'utf8');
+        await fs.writeFile(dest, original);
+        const expected = serialize(parse(original).meta, parse(original).body);
+        const got = (await jreq(port, 'GET', `/api/posts/${slug}`)).data;
+        assert.equal(got.body, parse(original).body, `${slug} body served untouched`);
+        const put = await jreq(port, 'PUT', `/api/posts/${slug}`, { meta: got.meta, body: got.body });
+        assert.equal(put.status, 200, JSON.stringify(put.data));
+        assert.equal(await fs.readFile(dest, 'utf8'), expected, `${slug} bytes after save`);
+        assert.equal(serialize(parse(expected).meta, parse(expected).body), expected, `${slug} serialize is stable`);
+        assert.equal((await jreq(port, 'DELETE', `/api/posts/${slug}`)).status, 200);
       }
     });
 

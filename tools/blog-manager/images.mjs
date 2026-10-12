@@ -36,10 +36,22 @@ export async function saveImage(slug, name, buf, root = getRoot()) {
   }
   if (!buf.length) throw new HttpError(400, 'Empty upload.');
   if (buf.length > MAX_IMAGE_BYTES) throw new HttpError(413, 'Image exceeds 10 MB.');
-  const file = sanitizeName(name);
+  const wanted = sanitizeName(name);
   const dir = imagesPath(slug, root);
   await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(safeJoin(dir, file), buf);
+  // never overwrite: image.png -> image-2.png -> image-3.png ...
+  const ext = path.extname(wanted);
+  const stem = wanted.slice(0, -ext.length);
+  let file = wanted;
+  for (let n = 2; ; n++) {
+    try {
+      await fs.writeFile(safeJoin(dir, file), buf, { flag: 'wx' });
+      break;
+    } catch (err) {
+      if (err.code !== 'EEXIST' || n > 500) throw err;
+      file = `${stem}-${n}${ext}`;
+    }
+  }
   const rel = `../../assets/blog/${slug}/${file}`;
   return { path: rel, markdown: `![](${rel})` };
 }

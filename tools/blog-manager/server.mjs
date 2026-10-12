@@ -3,21 +3,23 @@ import net from 'node:net';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildUi } from './bundle.mjs';
 import { MAX_IMAGE_BYTES, listImages, readImage, saveImage } from './images.mjs';
-import { HttpError, REPO_ROOT, assertSlug, createPost, deletePost, getRoot, listPosts, readPost, savePost, setDraft } from './posts.mjs';
+import { HttpError, REPO_ROOT, assertSlug, createPost, deletePost, getRoot, listPosts, readPost, renamePost, safeJoin, savePost, setDraft } from './posts.mjs';
 import { defaultRun, ghStatus, publishPost } from './publish.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const UI_DIR = path.join(HERE, 'ui');
-const VENDOR_DIR = path.join(REPO_ROOT, 'node_modules', 'easymde', 'dist');
+const FONT_DIRS = [
+  path.join(REPO_ROOT, 'node_modules', '@fontsource', 'poppins', 'files'),
+  path.join(REPO_ROOT, 'node_modules', '@fontsource-variable', 'inter', 'files'),
+];
+const FONT_RE = /^[a-z0-9-]+\.woff2$/;
 const JSON_LIMIT = 2_500_000;
 
 const STATIC = {
   '/': [path.join(UI_DIR, 'index.html'), 'text/html; charset=utf-8'],
-  '/app.js': [path.join(UI_DIR, 'app.js'), 'text/javascript; charset=utf-8'],
   '/style.css': [path.join(UI_DIR, 'style.css'), 'text/css; charset=utf-8'],
-  '/vendor/easymde.min.js': [path.join(VENDOR_DIR, 'easymde.min.js'), 'text/javascript; charset=utf-8'],
-  '/vendor/easymde.min.css': [path.join(VENDOR_DIR, 'easymde.min.css'), 'text/css; charset=utf-8'],
 };
 
 function send(res, status, body, headers = {}) {
@@ -70,9 +72,14 @@ export function createManagerServer({ port, astroPort, root = getRoot(), run = d
   const origins = new Set([...hosts].map((h) => `http://${h}`));
   const steps = new Map();
   let ghCache = { at: 0, ok: false };
+  let bundle = null;
 
   const csp = [
     "default-src 'self'",
+    "script-src 'self'",
+    "font-src 'self'",
+    "connect-src 'self'",
+    "object-src 'none'",
     "img-src 'self' data: blob:",
     "style-src 'self' 'unsafe-inline'",
     `frame-src http://127.0.0.1:${astroPort} http://localhost:${astroPort}`,
@@ -136,6 +143,10 @@ export function createManagerServer({ port, astroPort, root = getRoot(), run = d
       await setDraft(slug, true, root);
       return sendJson(res, 200, { ok: true });
     }
+    if (sub === 'rename' && parts.length === 3 && method === 'POST') {
+      const body = await readJson(req);
+      return sendJson(res, 200, await renamePost(slug, body.slug, root));
+    }
     if (sub === 'publish' && parts.length === 3 && method === 'POST') {
       const body = await readJson(req);
       const dryRun = body.dryRun === true;
@@ -167,6 +178,32 @@ export function createManagerServer({ port, astroPort, root = getRoot(), run = d
       const url = { pathname: rawPath, searchParams: new URLSearchParams(rawQuery) };
 
       if (url.pathname.startsWith('/api/')) return await api(req, res, url);
+
+      if (req.method === 'GET' && url.pathname === '/app.js') {
+        const dev = process.env.BLOG_UI_DEV === '1';
+        if (dev || !bundle) bundle = buildUi({ dev });
+        try {
+          return send(res, 200, await bundle, { 'Content-Type': 'text/javascript; charset=utf-8' });
+        } catch (err) {
+          bundle = null;
+          console.error('[blog] ui bundle error:', err.message);
+          return send(res, 500, `console.error(${JSON.stringify(err.message)});`, { 'Content-Type': 'text/javascript; charset=utf-8' });
+        }
+      }
+      if (req.method === 'GET' && url.pathname.startsWith('/fonts/')) {
+        const name = url.pathname.slice('/fonts/'.length);
+        if (!FONT_RE.test(name)) throw new HttpError(400, 'Bad font name.');
+        for (const dir of FONT_DIRS) {
+          let data;
+          try {
+            data = await fs.readFile(safeJoin(dir, name));
+          } catch {
+            continue;
+          }
+          return send(res, 200, data, { 'Content-Type': 'font/woff2' });
+        }
+        throw new HttpError(404, 'Not found.');
+      }
 
       const entry = STATIC[url.pathname];
       if (entry && req.method === 'GET') {

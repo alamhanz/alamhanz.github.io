@@ -130,20 +130,24 @@ export async function listPosts(root = getRoot()) {
     const slug = f.replace(/\.md$/, '');
     if (!f.endsWith('.md') || !SLUG_RE.test(slug)) continue;
     let meta;
+    let body = '';
     try {
-      ({ meta } = parse(await fs.readFile(path.join(dir, f), 'utf8')));
+      ({ meta, body } = parse(await fs.readFile(path.join(dir, f), 'utf8')));
       if (!meta || typeof meta !== 'object') meta = {};
     } catch (err) {
-      out.push({ slug, title: slug, pubDate: null, draft: false, tags: [], cover: null, error: `Unreadable front matter: ${String(err.message).split('\n')[0]}` });
+      out.push({ slug, title: slug, description: '', pubDate: null, updatedDate: null, draft: false, tags: [], cover: null, words: 0, error: `Unreadable front matter: ${String(err.message).split('\n')[0]}` });
       continue;
     }
     out.push({
       slug,
       title: meta.title ?? slug,
+      description: meta.description ?? '',
       pubDate: normDate(meta.pubDate) ?? null,
+      updatedDate: normDate(meta.updatedDate) ?? null,
       draft: meta.draft === true,
       tags: meta.tags ?? [],
       cover: meta.cover ?? null,
+      words: (body.match(/\S+/g) ?? []).length,
     });
   }
   return out.sort((a, b) => (b.pubDate ?? '9999').localeCompare(a.pubDate ?? '9999') || a.slug.localeCompare(b.slug));
@@ -205,4 +209,46 @@ export async function deletePost(slug, root = getRoot()) {
   await fs.rm(p);
   await fs.rm(imagesPath(slug, root), { recursive: true, force: true });
   return { ok: true };
+}
+
+/**
+ * Rename a draft: `<old>.md` -> `<new>.md`, `assets/blog/<old>/` -> `assets/blog/<new>/`, and rewrite
+ * the image and cover paths that point at the old folder. Published posts are refused (their URL is live).
+ * Order: write the new file (exclusive), move the folder, drop the old file. Each step is undone if a later one fails.
+ */
+export async function renamePost(slug, newSlug, root = getRoot()) {
+  assertSlug(slug);
+  assertSlug(newSlug);
+  if (slug === newSlug) throw new HttpError(400, 'The new slug is the same as the current one.');
+  const from = postPath(slug, root);
+  const to = postPath(newSlug, root);
+  const fromImages = imagesPath(slug, root);
+  const toImages = imagesPath(newSlug, root);
+  const { meta, body } = await readPost(slug, root);
+  if (meta.draft !== true) throw new HttpError(409, 'Only drafts can be renamed. Unpublish the post first.');
+  if ((await exists(to)) || (await exists(toImages))) throw new HttpError(409, 'A post with this slug already exists.');
+
+  const oldRef = `../../assets/blog/${slug}/`;
+  const newRef = `../../assets/blog/${newSlug}/`;
+  const next = { ...meta, ...(typeof meta.cover === 'string' ? { cover: meta.cover.split(oldRef).join(newRef) } : {}) };
+  const text = serialize(next, body.split(oldRef).join(newRef));
+
+  try {
+    await fs.writeFile(to, text, { flag: 'wx' });
+  } catch (err) {
+    throw err.code === 'EEXIST' ? new HttpError(409, 'A post with this slug already exists.') : err;
+  }
+  let moved = false;
+  try {
+    if (await exists(fromImages)) {
+      await fs.rename(fromImages, toImages);
+      moved = true;
+    }
+    await fs.rm(from);
+  } catch (err) {
+    if (moved) await fs.rename(toImages, fromImages).catch(() => {});
+    await fs.rm(to, { force: true });
+    throw new HttpError(500, `Rename failed, the original was left in place: ${err.message}`);
+  }
+  return { slug: newSlug };
 }
