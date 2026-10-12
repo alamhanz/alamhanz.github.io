@@ -95,7 +95,7 @@ async function unit() {
 
 function request(port, method, urlPath, { body, headers = {} } = {}) {
   return new Promise((resolve, reject) => {
-    const req = http.request({ host: '127.0.0.1', port, method, path: urlPath, headers: { Host: `127.0.0.1:${port}`, ...headers } }, (res) => {
+    const req = http.request({ host: '127.0.0.1', port, agent: false, method, path: urlPath, headers: { Host: `127.0.0.1:${port}`, ...headers } }, (res) => {
       const chunks = [];
       res.on('data', (c) => chunks.push(c));
       res.on('end', () => {
