@@ -13,7 +13,7 @@ Astro 7 static site (v2, branch `v2` / `feat/v2-astro`; live `xyz` is still the 
 ## Git
 - GitHub: alamhanz/alamhanz.github.io, remote over HTTPS (gh credentials)
 - `xyz` = production branch; pushing or merging into it deploys. `main` is the GitHub default but not used for deploys
-- `xyz` is protected: 1 approval + signed commits + resolved conversations. As the only maintainer, merge PRs on GitHub by ticking "Merge without waiting for requirements (bypass rules)"
+- `xyz` is protected: PR required (0 approvals) + signed commits + resolved conversations. Agent and local commits are unsigned, so merge PRs on GitHub by ticking "Merge without waiting for requirements (bypass rules)"
 - v2 work: feature branches off `v2`, PRs into `v2`; cutover = PR `v2` -> `xyz` (owner-triggered)
 
 ## Commands
