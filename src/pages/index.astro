@@ -2,8 +2,9 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PostCard from '../components/PostCard.astro';
-import SocialLinks from '../components/SocialLinks.astro';
+import ProfileJson from '../components/ProfileJson.astro';
 import Icon from '../components/Icon.astro';
+import { profile } from '../data/profile';
 import { site } from '../data/site';
 
 const posts = (await getCollection('blog', ({ data }) => !import.meta.env.PROD || !data.draft))
@@ -12,44 +13,53 @@ const posts = (await getCollection('blog', ({ data }) => !import.meta.env.PROD |
 ---
 
 <BaseLayout title={site.title} description={site.description} path="/">
-  <section aria-labelledby="hello" class="pt-8 md:pt-20">
-    <h1
-      id="hello"
-      class="font-poppins font-bold text-4xl md:text-6xl leading-tight text-center md:text-left border-b-2 border-selected-text pb-4"
-    >
-      Hello, Alamsyah Here.
-    </h1>
-    <p class="mt-8 text-center md:text-left">
-      Welcome to my personal page.<br />
-      I'm a data scientist. If you have a usecase.
-      <a class="text-link" href="/mycalendar">Lets Talk.</a>
-    </p>
-    <div class="mt-8 flex flex-col items-center gap-6 md:flex-row md:gap-8">
-      <a class="btn" href="/mycalendar">
-        <Icon name="calendar-event" class="size-6" />
-        Lets Talk
-        <Icon name="arrow-right" class="size-5" />
-      </a>
-      <SocialLinks />
+  <section slot="hero" class="hero dark" aria-labelledby="hello">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="prompt">whoami</p>
+        <h1 id="hello">{profile.name}</h1>
+        <p class="sub">data scientist + BI engineer // retail &amp; logistics</p>
+        <p class="vs">
+          I use data to <span class="hl">cut costs</span> and <span class="hl">speed up delivery</span> in retail and logistics.
+        </p>
+        <div class="actions">
+          <a class="btn" href="/mycalendar">
+            <Icon name="calendar-event" class="size-5" />
+            Let's talk
+          </a>
+          <a class="link" href="/about">Read the profile</a>
+        </div>
+      </div>
+      <ProfileJson />
+    </div>
+  </section>
+
+  <section class="sect" aria-labelledby="work-on">
+    <header class="sect-head">
+      <p class="label"><b>#</b> focus</p>
+      <h2 id="work-on">What I work on</h2>
+    </header>
+    <div>
+      <ul class="focus">
+        {profile.focus.map((f) => <li><strong>{f.title}</strong><span>{f.text}</span></li>)}
+      </ul>
+      <p class="mt-6"><a class="link" href="/about">More about me</a></p>
     </div>
   </section>
 
   {
     posts.length > 0 && (
-      <section aria-labelledby="latest" class="mt-16 md:mt-24">
-        <h2 id="latest" class="font-poppins font-bold text-2xl md:text-4xl mb-8">
-          Latest writing
-        </h2>
-        <div class="grid gap-5 md:grid-cols-3">
-          {posts.map((post) => (
-            <PostCard post={post} />
-          ))}
+      <section class="sect" aria-labelledby="latest">
+        <header class="sect-head">
+          <p class="label"><b>$</b> ls -lt blog/</p>
+          <h2 id="latest">Latest writing</h2>
+        </header>
+        <div>
+          <ol class="index">
+            {posts.map((post) => <PostCard post={post} />)}
+          </ol>
+          <p class="mt-6"><a class="link" href="/blog">All writing</a></p>
         </div>
-        <p class="mt-6">
-          <a class="text-link" href="/blog">
-            All posts
-          </a>
-        </p>
       </section>
     )
   }
