@@ -7,6 +7,7 @@ import { mountStories } from './stories.js';
 const view = document.getElementById('view');
 let current = null;
 let routeToken = 0;
+let shownHash = location.hash;
 
 const navigate = (hash) => {
   if (location.hash === hash) route();
@@ -16,9 +17,17 @@ const navigate = (hash) => {
 async function route() {
   const token = ++routeToken;
   const previous = current;
-  current = null;
-  if (previous) await previous.destroy();
-  if (token !== routeToken) return;
+  if (previous) {
+    // the editor flushes its edits first; if that fails the user stays on the page with the error and Retry
+    if (!(await previous.canLeave())) {
+      if (token === routeToken) history.replaceState(null, '', shownHash);
+      return;
+    }
+    if (token !== routeToken) return;
+    current = null;
+    previous.destroy();
+  }
+  shownHash = location.hash;
   const m = /^#\/edit\/([a-z0-9-]+)$/.exec(location.hash);
   document.body.classList.toggle('route-edit', !!m);
   document.title = m ? `${m[1]} - Blog manager` : 'Blog manager';

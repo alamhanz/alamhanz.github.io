@@ -101,7 +101,10 @@ export function mountStories(view, { navigate }) {
 
   load();
   return {
-    async destroy() {
+    async canLeave() {
+      return true;
+    },
+    destroy() {
       alive = false;
     },
   };

@@ -16,7 +16,7 @@ const IMAGE_ACCEPT = '.png,.jpg,.jpeg,.webp,.gif,.avif,.svg,image/png,image/jpeg
 /**
  * createEditor({ parent, doc, slug, upload, onChange, onError })
  *   upload(File) -> Promise<{ path, markdown }>   onChange() runs on user edits only
- * Returns { getValue, setValue, setSlug, setMode, focus, destroy, insertImages, view }.
+ * Returns { getValue, pendingUploads, uploadsDone, setValue, setSlug, setMode, focus, destroy, insertImages, view }.
  */
 export function createEditor({ parent, doc = '', slug = '', upload, onChange = () => {}, onError = () => {} }) {
   const live = new Compartment();
@@ -24,6 +24,13 @@ export function createEditor({ parent, doc = '', slug = '', upload, onChange = (
   let mode = 'live';
   let currentSlug = slug;
   let eol = '\n';
+  // uploads in flight: their `![Uploading N...]()` placeholder must not be saved
+  const pending = new Set();
+  const track = (p) => {
+    const done = p.finally(() => pending.delete(done));
+    pending.add(done);
+    return done;
+  };
 
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
@@ -35,7 +42,7 @@ export function createEditor({ parent, doc = '', slug = '', upload, onChange = (
   fileInput.addEventListener('change', () => {
     const files = [...fileInput.files].filter(isImageFile);
     fileInput.value = '';
-    if (files.length) insertImageFiles(view, files, upload, onError);
+    if (files.length) track(insertImageFiles(view, files, upload, onError));
   });
 
   const liveExtensions = () => [livePreview, selectionToolbar, inserter, inserterActions.of({ pickImage: () => fileInput.click() })];
@@ -50,7 +57,7 @@ export function createEditor({ parent, doc = '', slug = '', upload, onChange = (
     EditorView.contentAttributes.of({ 'aria-label': 'Story body', spellcheck: 'true' }),
     EditorView.editorAttributes.of(() => (mode === 'source' ? { class: 'cm-source' } : {})),
     slugCompartment.of(slugFacet.of(currentSlug)),
-    imageDropPaste(() => upload, () => onError),
+    imageDropPaste(() => upload, () => onError, track),
     live.of(mode === 'live' ? liveExtensions() : []),
     EditorView.updateListener.of((u) => {
       if (u.docChanged) onChange();
@@ -82,7 +89,11 @@ export function createEditor({ parent, doc = '', slug = '', upload, onChange = (
       // the editorAttributes callback reads `mode`; the reconfigure forces CodeMirror to re-read it
       view.dispatch({ effects: live.reconfigure(mode === 'live' ? liveExtensions() : []) });
     },
-    insertImages: (files) => insertImageFiles(view, [...files].filter(isImageFile), upload, onError),
+    insertImages: (files) => track(insertImageFiles(view, [...files].filter(isImageFile), upload, onError)),
+    pendingUploads: () => pending.size,
+    async uploadsDone() {
+      while (pending.size) await Promise.allSettled([...pending]);
+    },
     focus: () => view.focus(),
     destroy() {
       view.destroy();

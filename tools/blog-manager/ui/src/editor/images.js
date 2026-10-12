@@ -187,13 +187,13 @@ function replaceToken(view, token, replacement) {
 }
 
 /** paste / drop handlers: image files are uploaded and inserted, everything else is left to CodeMirror. */
-export function imageDropPaste(getUpload, getOnError) {
+export function imageDropPaste(getUpload, getOnError, track = (p) => p) {
   return EditorView.domEventHandlers({
     paste(event, view) {
       const files = [...(event.clipboardData?.files ?? [])].filter(isImageFile);
       if (!files.length) return false;
       event.preventDefault();
-      insertImageFiles(view, files, getUpload(), getOnError());
+      track(insertImageFiles(view, files, getUpload(), getOnError()));
       return true;
     },
     drop(event, view) {
@@ -201,7 +201,7 @@ export function imageDropPaste(getUpload, getOnError) {
       if (!files.length) return false;
       event.preventDefault();
       const pos = view.posAtCoords({ x: event.clientX, y: event.clientY }) ?? view.state.selection.main.head;
-      insertImageFiles(view, files, getUpload(), getOnError(), pos);
+      track(insertImageFiles(view, files, getUpload(), getOnError(), pos));
       return true;
     },
   });

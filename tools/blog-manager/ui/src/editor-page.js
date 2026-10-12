@@ -30,7 +30,7 @@ export function mountEditor(view, slug, { navigate }) {
   const onKeydown = (ev) => {
     if ((ev.ctrlKey || ev.metaKey) && !ev.altKey && ev.key.toLowerCase() === 's') {
       ev.preventDefault();
-      save({ force: true });
+      save();
     }
   };
   const onBeforeUnload = (ev) => {
@@ -48,7 +48,7 @@ export function mountEditor(view, slug, { navigate }) {
     if (failed) {
       s.classList.add('err');
       const retry = el('button', { type: 'button', className: 'link', textContent: 'Retry' });
-      retry.addEventListener('click', () => save({ force: true }));
+      retry.addEventListener('click', () => save());
       s.append(`Save failed: ${failed} `, retry);
     } else if (saving) s.textContent = 'Saving...';
     else if (dirty) s.textContent = 'Unsaved changes';
@@ -75,29 +75,34 @@ export function mountEditor(view, slug, { navigate }) {
 
   const collectMeta = () => ({ ...meta, pubDate: meta.pubDate || undefined });
 
-  async function save({ force = false } = {}) {
+  // One save at a time; the latest content wins. A failed save leaves `dirty` set, so Retry and Ctrl+S
+  // write again, while an unedited post is never written (that would stamp updatedDate).
+  async function save() {
     clearTimeout(timer);
-    if (!meta || !editor) return;
-    if (saving) {
-      await saving;
-      return save({ force });
+    for (;;) {
+      if (!meta || !editor) return;
+      if (saving) await saving;
+      else if (editor.pendingUploads()) await editor.uploadsDone();
+      else break;
     }
-    if (!dirty && !force) return;
+    if (!dirty) return;
     dirty = false;
     failed = '';
     const payload = json('PUT', { meta: collectMeta(), body: editor.getValue() });
-    saving = api(`/posts/${slug}`, payload);
+    saving = (async () => {
+      try {
+        await api(`/posts/${slug}`, payload);
+        savedAt = clock();
+      } catch (e) {
+        dirty = true;
+        failed = e.message;
+      } finally {
+        saving = null;
+        renderStatus();
+      }
+    })();
     renderStatus();
-    try {
-      await saving;
-      savedAt = clock();
-    } catch (e) {
-      dirty = true;
-      failed = e.message;
-    } finally {
-      saving = null;
-      renderStatus();
-    }
+    await saving;
   }
 
   /* ---------- meta changes from the side panel / publish dialog ---------- */
@@ -158,7 +163,7 @@ export function mountEditor(view, slug, { navigate }) {
     if (!next || next === slug) return;
     ui.renameBtn.disabled = true;
     try {
-      await save({ force: true });
+      await save();
       if (failed) throw new Error(`Could not save first: ${failed}`);
       const r = await api(`/posts/${slug}/rename`, json('POST', { slug: next }));
       dirty = false;
@@ -190,7 +195,7 @@ export function mountEditor(view, slug, { navigate }) {
       slug,
       meta,
       patchMeta,
-      save: () => save({ force: true }),
+      save: () => save(),
       saveFailed: () => failed,
       onDone: () => reload(),
     });
@@ -380,21 +385,19 @@ export function mountEditor(view, slug, { navigate }) {
 
   load();
   return {
-    async destroy() {
+    // flush pending edits before leaving; false means they could not be saved and the user stays here
+    async canLeave() {
+      await save();
+      if (!dirty && !failed) return true;
+      flash('Your latest changes are not saved. Retry before leaving.');
+      return false;
+    },
+    destroy() {
       alive = false;
       clearTimeout(timer);
       clearTimeout(flashTimer);
       document.removeEventListener('keydown', onKeydown);
       window.removeEventListener('beforeunload', onBeforeUnload);
-      // flush a pending autosave before the next view replaces this one
-      if (dirty && meta && editor) {
-        try {
-          await api(`/posts/${slug}`, json('PUT', { meta: collectMeta(), body: editor.getValue() }));
-          dirty = false;
-        } catch {
-          // the post stays as last saved on disk
-        }
-      } else if (saving) await saving.catch(() => {});
       editor?.destroy();
     },
   };

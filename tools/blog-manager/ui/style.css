@@ -3,7 +3,7 @@
 @font-face { font-family: Poppins; font-weight: 700; font-display: swap; src: url(/fonts/poppins-latin-700-normal.woff2) format('woff2'); }
 @font-face { font-family: Inter; font-weight: 100 900; font-display: swap; src: url(/fonts/inter-latin-wght-normal.woff2) format('woff2'); }
 
-:root { --bg: #f5f5f5; --theme: #30475e; --accent: #f05454; --ink: #121212; --line: #dfe3e8; --muted: #6b7785; --danger: #b42323; }
+:root { --bg: #f5f5f5; --theme: #30475e; --accent: #f05454; --ink: #121212; --line: #dfe3e8; --muted: #5f6b78; --danger: #b42323; }
 * { box-sizing: border-box; }
 body { margin: 0; font: 15px/1.5 Inter, 'Segoe UI', system-ui, sans-serif; color: var(--theme); background: var(--bg); }
 h1, h2, h3, .brand, .btn, .stab, .field-label { font-family: Poppins, 'Segoe UI', system-ui, sans-serif; }
