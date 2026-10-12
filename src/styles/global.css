@@ -256,8 +256,15 @@
   .hero-grid {
     display: grid;
     gap: 2.5rem;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     align-items: center;
+  }
+  .hero-grid > * {
+    min-width: 0;
+  }
+  .hero-socials {
+    margin-top: 1.25rem;
+    margin-left: -0.5rem;
   }
   .hero h1 {
     color: #fff;
@@ -283,7 +290,7 @@
   }
   @media (min-width: 60rem) {
     .hero-grid {
-      grid-template-columns: 1.2fr 1fr;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
     }
   }
 
@@ -321,6 +328,7 @@
     font: 400 0.8125rem/1.75 var(--font-mono);
     color: var(--color-on-dark);
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
     overflow-x: auto;
   }
   .json .k {

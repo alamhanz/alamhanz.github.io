@@ -13,8 +13,8 @@ const isCurrent = (href: string) => (href === '/' ? path === '/' : path === href
 
 <header class="site-head">
   <div class="wrap">
-    <a class="mark" href="/">Alamsyah Hanza</a>
-    <nav aria-label="Primary">
+    {path !== '/' && <a class="mark" href="/">Alamsyah Hanza</a>}
+    <nav aria-label="Primary" class="ml-auto">
       <button id="toggle" class="menu-btn" type="button" aria-controls="nav" aria-expanded="false" aria-label="Menu">
         <Icon name="menu-2" class="size-6 toggle-open" />
         <Icon name="x" class="size-6 toggle-close hidden" />
