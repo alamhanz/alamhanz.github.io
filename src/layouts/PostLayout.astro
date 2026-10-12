@@ -8,28 +8,28 @@ interface Props {
 
 const { post } = Astro.props;
 const { title, description, pubDate, updatedDate, tags } = post.data;
-const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+const fmt = (d: Date) => d.toISOString().slice(0, 10);
 ---
 
 <BaseLayout title={`${title} | Alamsyah Hanza`} description={description} path={`/blog/${post.id}`} type="article">
-  <article>
-    <a class="text-link text-sm" href="/blog">&larr; All posts</a>
-    <h1 class="font-poppins font-bold text-4xl md:text-6xl leading-tight mt-6">{title}</h1>
-    <p class="mt-4 text-sm opacity-70">
+  <article class="pt-12 md:pt-16">
+    <a class="link text-sm" href="/blog">&larr; All posts</a>
+    <h1 class="font-bold text-4xl md:text-6xl leading-tight mt-6" style="letter-spacing:-0.03em">{title}</h1>
+    <p class="mono-sm mt-4">
       <time datetime={pubDate.toISOString()}>{fmt(pubDate)}</time>
-      {updatedDate && <span> &middot; updated <time datetime={updatedDate.toISOString()}>{fmt(updatedDate)}</time></span>}
+      {updatedDate && <span> .. updated <time datetime={updatedDate.toISOString()}>{fmt(updatedDate)}</time></span>}
     </p>
     {
       tags.length > 0 && (
-        <ul class="mt-3 flex flex-wrap gap-2 text-xs">
+        <ul class="tags" aria-label="Tags">
           {tags.map((t) => (
-            <li class="rounded-full bg-theme/10 px-2.5 py-1">{t}</li>
+            <li class="tag">#{t}</li>
           ))}
         </ul>
       )
     }
     <div
-      class="prose prose-lg mt-10 max-w-[68ch] prose-headings:font-poppins prose-headings:text-theme prose-a:text-theme prose-a:underline-offset-4 hover:prose-a:text-selected-text prose-strong:text-theme prose-code:text-theme text-theme"
+      class="prose prose-lg mt-10 mb-8 max-w-[68ch] prose-headings:font-poppins prose-headings:text-theme prose-a:text-theme prose-a:decoration-accent prose-a:decoration-2 prose-a:underline-offset-4 hover:prose-a:text-accent-ink prose-strong:text-theme prose-code:text-theme text-theme"
     >
       <slot />
     </div>

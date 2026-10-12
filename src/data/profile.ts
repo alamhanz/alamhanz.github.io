@@ -2,7 +2,14 @@ export interface Experience {
   role: string;
   org: string;
   period: string;
+  start: string;
+  end?: string;
   bullets: string[];
+}
+
+export interface TitledText {
+  title: string;
+  text: string;
 }
 
 export interface SkillLogo {
@@ -31,18 +38,35 @@ export const profile = {
     { label: 'Education', value: "Bachelor's in Mathematics, Universitas Indonesia" },
     { label: 'Languages', value: 'Indonesian (native), English (intermediate)' },
   ],
-  achievements: [
-    'Cut logistics costs by 15% at Gojek with a machine-learning model.',
-    'Saved about 15% in costs and cut packing time by 10% at Roms with a packing optimization.',
-    'Predicted food delivery times for 500,000+ restaurants.',
-    'Delivered 20+ dashboards in 2 months for a client (Indonesia Re).',
-    'Led a 25+ person committee running a 3,000+ member data science community.',
-  ],
+  json: {
+    now: 'Business Intelligence Engineer, Amazon',
+    before: 'Roms, Gojek',
+    industries: 'Retail, logistics, supply chain',
+    strengths: 'Machine learning, data analysis, experiment (A/B) testing, dashboards and reporting',
+    also: 'Leads teams and runs a data science community',
+  },
+  focus: [
+    { title: 'Where stock should sit', text: 'Inventory placement for faster same-day delivery.' },
+    { title: 'Predicting what happens next', text: 'Delivery times, demand and stock levels.' },
+    { title: 'Spotting fraud', text: 'Models that flag suspicious activity.' },
+    { title: 'Reports people actually use', text: 'Self-serve tools, KPI reports and dashboards for leaders.' },
+  ] satisfies TitledText[],
+  problems: [
+    { title: 'Faster delivery', text: 'Planning where inventory is stored and predicting delivery times.' },
+    { title: 'Lower operating costs', text: 'Logistics and packing optimization with machine learning.' },
+    { title: 'Forecasting', text: 'Demand and stock levels, so teams plan ahead instead of reacting.' },
+    { title: 'Fraud detection', text: 'Models that flag suspicious activity.' },
+    { title: 'Experiments', text: 'Designing and reading A/B tests with product managers.' },
+    { title: 'Messy data to dashboards', text: 'Bringing scattered data together into self-serve tools and KPI reports.' },
+    { title: 'Teams and community', text: 'Leading data science and BI teams, and running a data science community.' },
+  ] satisfies TitledText[],
+  cvNote: 'roles, projects and results, in one PDF',
   experience: [
     {
       role: 'Business Intelligence Engineer',
       org: 'Amazon',
       period: 'Apr 2025 - Present',
+      start: '2025-04',
       bullets: [
         'Plan where inventory is stored for faster same-day delivery.',
         'Build self-serve tools and automated KPI reports for Supply Chain leaders.',
@@ -52,12 +76,16 @@ export const profile = {
       role: 'Data Scientist',
       org: 'Roms, inc.',
       period: 'Feb 2024 - Apr 2025',
+      start: '2024-02',
+      end: '2025-04',
       bullets: ['Built tools to pack and categorize items more efficiently and forecast stock levels.'],
     },
     {
       role: 'Data Scientist',
       org: 'Gojek Indonesia',
       period: 'Mar 2019 - Apr 2024',
+      start: '2019-03',
+      end: '2024-04',
       bullets: [
         'Led data science and BI teams.',
         'Built models for delivery times, fraud detection and demand, and ran A/B tests with product managers.',
@@ -67,28 +95,32 @@ export const profile = {
       role: 'Data Consultant (part-time)',
       org: 'Indonesia Re',
       period: 'Oct 2022 - Apr 2023',
-      bullets: ['Brought scattered data together and delivered 20+ dashboards with handover documentation.'],
+      start: '2022-10',
+      end: '2023-04',
+      bullets: ['Brought scattered data together and delivered dashboards with handover documentation.'],
     },
     {
       role: 'Business Intelligence Analyst',
       org: 'Gojek Indonesia',
       period: 'Oct 2017 - Mar 2019',
+      start: '2017-10',
+      end: '2019-03',
       bullets: ['Analyzed products, automated reports and built customer segments.'],
     },
   ] satisfies Experience[],
   skillGroups: [
     {
-      title: 'Analysis and ML',
-      text: 'Python (advanced), SQL (expert), machine learning, experiment design, pandas, Jupyter',
+      title: 'analysis_and_ml',
+      items: ['Python (advanced)', 'SQL (expert)', 'machine learning', 'experiment design', 'pandas', 'Jupyter'],
     },
-    { title: 'Data and cloud', text: 'ETL, Google Cloud, AWS, Docker, GitHub' },
-    { title: 'BI and visualization', text: 'Tableau, Google Data Studio, Amazon QuickSight' },
-    { title: 'People', text: 'Stakeholder management, training and mentoring, project management' },
+    { title: 'data_and_cloud', items: ['ETL', 'Google Cloud', 'AWS', 'Docker', 'GitHub'] },
+    { title: 'bi_and_viz', items: ['Tableau', 'Google Data Studio', 'Amazon QuickSight'] },
+    { title: 'people', items: ['stakeholder management', 'training and mentoring', 'project management'] },
   ],
   education: {
     degree: "Bachelor's in Mathematics",
     school: 'Universitas Indonesia',
-    detail: '2011 - 2014, GPA 3.72',
+    detail: '2011 - 2014',
   },
   certificates: [
     'Intro to TensorFlow for AI, ML and Deep Learning (2020)',

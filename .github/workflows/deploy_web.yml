@@ -46,13 +46,15 @@ jobs:
 
       # Excluded from upload and from deletion (the regex also matches bucket objects):
       # bucket-only images/hello.jpg, images/hello2.jpg, images/hello3.jpg (og:image), about.txt,
+      # and the v1 lyceum page with its own assets (lyceum, tailwind.css, navi-pilot.js,
+      # images/lyceum-logo.jpg; its other images live in public/images and are synced normally),
       # and every extensionless page (they are uploaded below with an explicit text/html
       # content type, so an object is never served with a guessed type).
       # Pages kept as <name>.html in staging because <name>/ is a directory (blog.html) are
       # excluded under their staged name as well.
       - name: Sync assets to bucket
         run: |
-          EXCLUDE='images/hello[0-9]?\.jpg|about\.txt'
+          EXCLUDE='images/hello[0-9]?\.jpg|about\.txt|lyceum|tailwind\.css|navi-pilot\.js|images/lyceum-logo\.jpg'
           while IFS= read -r f; do
             [ -n "$f" ] && EXCLUDE="$EXCLUDE|$(printf '%s' "$f" | sed 's/[.]/[.]/g')"
           done < <(cat _stage/extensionless.txt _stage/collisions.txt)
