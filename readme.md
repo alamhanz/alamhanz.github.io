@@ -57,6 +57,8 @@ npm ci                 # first time, or when dependencies changed
 npm run blog
 ```
 
+On Windows you can instead double-click `blog-manager.cmd` in the repo root: it runs `npm ci` when packages are missing or out of date, starts the manager and opens it in your browser. Close the window to stop.
+
 - Manager UI: http://127.0.0.1:4322; site preview (astro dev): http://127.0.0.1:4321. Ctrl+C stops both.
 - Write: create a draft and write in a Medium-style editor (formatting shows inline, select text for the toolbar, "+" on an empty line; autosaves). Upload, drag or paste images into `src/assets/blog/<slug>/`; pick one as the cover.
 - Publish: opens a PR into `xyz` from branch `post/<slug>` (via a temporary worktree; your checkout is untouched) and shows the PR link. Needs `gh auth login`. The post goes live when that PR is merged; commits are unsigned, so merge with bypass: `gh pr merge <n> --merge --admin`.
