@@ -3,12 +3,14 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import http from 'node:http';
+import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { sanitizeName } from './images.mjs';
-import { HttpError, assertSlug, parse, safeJoin, serialize, slugify } from './posts.mjs';
+import { HttpError, REPO_ROOT, assertSlug, parse, safeJoin, serialize, slugify } from './posts.mjs';
 import { publishPost } from './publish.mjs';
-import { createManagerServer } from './server.mjs';
+import { astroReachable, createManagerServer } from './server.mjs';
 
 const args = new Set(process.argv.slice(2));
 const runUnit = args.has('--unit') || !args.has('--server');
@@ -70,6 +72,22 @@ async function unit() {
     for (const bad of ['x.exe', 'x', 'x.html', '.png.txt']) throws400(() => sanitizeName(bad));
   });
   await ok('slugify', () => assert.equal(slugify('Héllo, World! 2026'), 'hello-world-2026'));
+  await ok('astroReachable: any listener counts (even one that never answers HTTP), a closed port does not', async () => {
+    const tcp = net.createServer((s) => s.on('error', () => {}));
+    await new Promise((r) => tcp.listen(0, '127.0.0.1', r));
+    const { port } = tcp.address();
+    assert.equal(await astroReachable(port), true);
+    await new Promise((r) => tcp.close(r));
+    assert.equal(await astroReachable(port, 500), false);
+  });
+  await ok('UI: editor slug is read-only but explained, new-post slug is editable', async () => {
+    const html = await fs.readFile(path.join(path.dirname(fileURLToPath(import.meta.url)), 'ui', 'index.html'), 'utf8');
+    const tag = (id) => new RegExp(`<input[^>]*id="${id}"[^>]*>`).exec(html)?.[0] ?? '';
+    assert.match(tag('f-slug'), /\breadonly\b/);
+    assert.match(tag('f-slug'), /title="[^"]+"/);
+    assert.match(html, /class="hint"/);
+    assert.doesNotMatch(tag('n-slug'), /\b(readonly|disabled)\b/);
+  });
 }
 
 function request(port, method, urlPath, { body, headers = {} } = {}) {
@@ -283,6 +301,41 @@ async function serverTests() {
       assert.notEqual(meta.draft, true);
       assert.equal((await jreq(port, 'POST', '/api/posts/smoke-test/unpublish')).status, 200);
       assert.equal((await jreq(port, 'GET', '/api/posts/smoke-test')).data.meta.draft, true);
+    });
+
+    await ok('unpublish on a real-shaped post (CRLF, quoted YAML) keeps content; missing post is 404', async () => {
+      const real = (await fs.readFile(path.join(REPO_ROOT, 'src', 'content', 'blog', 'hello-world.md'), 'utf8')).replace(/\r?\n/g, '\r\n');
+      await fs.writeFile(path.join(root, 'src', 'content', 'blog', 'hello-world.md'), real);
+      const listed = (await jreq(port, 'GET', '/api/posts')).data.find((p) => p.slug === 'hello-world');
+      assert.ok(listed && listed.draft === false, 'listed as published');
+      assert.equal((await jreq(port, 'POST', `/api/posts/${listed.slug}/unpublish`)).status, 200);
+      const after = (await jreq(port, 'GET', '/api/posts/hello-world')).data;
+      assert.equal(after.meta.draft, true);
+      assert.equal(after.meta.title, 'Hello, world');
+      assert.match(after.body, /Welcome to my new blog/);
+      const gone = await jreq(port, 'POST', '/api/posts/not-a-post/unpublish');
+      assert.equal(gone.status, 404);
+      assert.equal(gone.data.error, 'Post not found.');
+      assert.equal((await jreq(port, 'DELETE', '/api/posts/hello-world')).status, 200);
+    });
+
+    await ok('/api/status reports the preview from a TCP probe', async () => {
+      const tcp = net.createServer((s) => s.on('error', () => {}));
+      await new Promise((r) => tcp.listen(0, '127.0.0.1', r));
+      const probe = http.createServer();
+      await new Promise((r) => probe.listen(0, '127.0.0.1', r));
+      const p2 = probe.address().port;
+      probe.close();
+      const up = createManagerServer({ port: p2, astroPort: tcp.address().port, root, run: fakeRun });
+      await new Promise((r) => up.listen(p2, '127.0.0.1', r));
+      try {
+        assert.equal((await jreq(p2, 'GET', '/api/status')).data.astroUp, true);
+        await new Promise((r) => tcp.close(r));
+        assert.equal((await jreq(p2, 'GET', '/api/status')).data.astroUp, false);
+      } finally {
+        up.closeAllConnections();
+        up.close();
+      }
     });
 
     await ok('delete removes post and images; missing is 404', async () => {
