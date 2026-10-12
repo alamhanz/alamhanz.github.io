@@ -18,9 +18,9 @@ const fmt = (ym: string) => {
 ---
 
 <li>
-  <p class="mono-sm">
-    <time datetime={start}>{fmt(start)}</time> &ndash; {end ? <time datetime={end}>{fmt(end)}</time> : 'now'}<br />
-    {country}
+  <p class="mono-sm period">
+    <span class="dates"><time datetime={start}>{fmt(start)}</time> &ndash; {end ? <time datetime={end}>{fmt(end)}</time> : 'now'}</span>
+    <span class="where">{country}</span>
   </p>
   <div>
     <h3>
