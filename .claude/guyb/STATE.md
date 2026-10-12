@@ -9,6 +9,7 @@ Personal website (alamhanz.xyz): Astro 7 static site (v2) with Tailwind CSS v4, 
 ## Current Status
 - **v2 Astro site is LIVE** at alamhanz.xyz: the cutover PR #8 (v2 -> xyz) and the follow-up hero fix PR #9 (fix/home-hero -> xyz) are merged, and both deploy runs on xyz succeeded (verified with gh, 2026-10-12).
 - **Blog manager merged** (PR #10): local-only tool in `tools/blog-manager/`; `npm run blog:smoke` passes 19/19. No real post written with it yet.
+- **Blog manager v2 UI merged** (PR #17, closes #15): CodeMirror 6 editor, stories view, side panel, autosave, draft rename; `blog:smoke` 39 ok, `blog:ui-test` 20 steps. Real publish not yet exercised (stubs only).
 - **UI fixes merged** (PR #11): no backticks on inline code in posts; 44px mobile tap targets on 6 text links. Live and verified.
 - **404 page**: GCS bucket error page is now 404.html; a missing path returns 404 with the "Not found | Alamsyah Hanza" page.
 - **Live responsive check passed**: no overflow, nav works, no console errors at 375-1440 px.
@@ -19,6 +20,7 @@ Personal website (alamhanz.xyz): Astro 7 static site (v2) with Tailwind CSS v4, 
 - main (GitHub default, not used): 51ade94 (stale, diverged from xyz)
 
 ## Recent Changes (Log)
+- 2026-10-12: PR #17 feat/blog-manager-medium -> xyz merged (9c590d9): Medium-like blog manager UI, issue #15 closed. Runs -43 (plan), -44/-48/-46 (build), -47/-50 (reviews: 2 critical + 6 should-fix fixed in -49/-51), -52 (PR). Old easymde removed; playwright-core devDependency
 - 2026-10-12: PR #11 fix/ui-nits -> xyz merged; live and verified (run alamhanz.github.io-40)
 - 2026-10-12: 404 fix: bucket error page index.html -> 404.html (run -39). Rollback: `gcloud storage buckets update gs://alamhanz.xyz --web-main-page-suffix=index.html --web-error-page=index.html` (this gcloud uses --web-error-page, not --web-not-found-page)
 - 2026-10-12: PR #10 feat/blog-manager -> xyz merged (5ac634c); review run -33 approved with fixes, run -38 applied them (cover validation, pre-publish meta validation, global publish lock, list survives malformed front matter); deploy 38226981186 succeeded
@@ -28,7 +30,7 @@ Personal website (alamhanz.xyz): Astro 7 static site (v2) with Tailwind CSS v4, 
 - 2026-10-12: live responsive check at 375-1440 px passed (run -35)
 - 2026-10-12: PR #9 fix/home-hero -> xyz merged; deploy succeeded (run alamhanz.github.io-32, git-ops)
 - 2026-10-12: PR #8 v2 -> xyz (cutover) merged; v2 Astro site live. Earlier PRs also merged: #4 chore/session-docs -> xyz, #5 chore/guyb-state-move -> xyz, #6 feat/v2-astro -> v2, #7 feat/v2-concept-d -> v2
-- 2026-10-12: feat/blog-manager branch built (local blog manager backend, UI, smoke tests, review fixes; 871cfb0 is tip); not yet merged
+- 2026-10-12: feat/blog-manager branch built (local blog manager backend, UI, smoke tests, review fixes; 871cfb0 is tip); merged as PR #10
 - 2026-10-10: guyb files moved to .claude/guyb/ (STATE.md, pipeline/); OG image decision: keep face.jpg/hello3.jpg
 - 2026-10-04: Project notes (.claude/CLAUDE.md) and session state added; deploy workflow actions bumped to checkout@v4, auth@v2, setup-gcloud@v2. (PR #4, 222f051, c6fbc7a)
 - 2026-10-04: v1 site restructure + review fixes: lyceum nav unlinked, nav/footer inlined per page, about rewritten from CV, new CV redirect link, skills updated, og:url per page. (fee3d1f, ebde531, 1b51993)
@@ -45,6 +47,7 @@ Personal website (alamhanz.xyz): Astro 7 static site (v2) with Tailwind CSS v4, 
 - **xyz protection**: 0 approvals, signed commits kept; owner merges with bypass because agent commits are unsigned
 
 ## Open Issues
+- (resolved) issue #15 blog manager UI: merged as #17
 - (resolved) blog manager PR: merged as #10
 - (resolved) stale branch cleanup: done (run -37); main/base/dev/self-dev intentionally kept
 - (resolved) xyz protection relaxed to 0 approvals
@@ -59,6 +62,8 @@ Personal website (alamhanz.xyz): Astro 7 static site (v2) with Tailwind CSS v4, 
 - (resolved) "browser testing at phone/desktop widths not done" was for v1; superseded by the v2 responsive check below
 
 ## Next Up
-- Write the first real blog post with the blog manager
+- Write the first real blog post with the blog manager (first real test of publish from the new UI)
+- Optional: blog manager publish prunes unreferenced files in the post's asset folder (old covers / removed images are committed today)
+- Optional: delete remote branch feat/blog-manager-medium (merged)
 - Optional: set up commit signing so the protection bypass isn't needed
 - Optional, later: revisit base/dev/self-dev/main (currently kept on purpose)
