@@ -1,0 +1,35 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import Icon from '../../components/Icon.astro';
+import { site } from '../../data/site';
+
+const posts = (await getCollection('blog', ({ data }) => !import.meta.env.PROD || !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+---
+
+<BaseLayout title="Blog | Alamsyah Hanza" description="Writing on data science, analytics and building things." path="/blog">
+  <section aria-labelledby="blog-title">
+    <div class="blog-head">
+      <p class="label"><b>$</b> ls -lt ~/blog</p>
+      <h1 id="blog-title">Writing</h1>
+      <p class="d">Notes on data science, analytics and building things.</p>
+    </div>
+    <div class="blog-list">
+      {
+        posts.length > 0 ? (
+          <ol class="index">
+            {posts.map((post) => <PostCard post={post} />)}
+          </ol>
+        ) : (
+          <p>No posts yet.</p>
+        )
+      }
+      <p class="older mt-6">
+        <a href={site.mediumUrl} rel="noopener">older posts on medium <Icon name="arrow-up-right" class="size-4" /></a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

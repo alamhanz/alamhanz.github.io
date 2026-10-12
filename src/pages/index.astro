@@ -1,0 +1,66 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import ProfileJson from '../components/ProfileJson.astro';
+import Icon from '../components/Icon.astro';
+import { profile } from '../data/profile';
+import { site } from '../data/site';
+
+const posts = (await getCollection('blog', ({ data }) => !import.meta.env.PROD || !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+---
+
+<BaseLayout title={site.title} description={site.description} path="/">
+  <section slot="hero" class="hero dark" aria-labelledby="hello">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="prompt">whoami</p>
+        <h1 id="hello">{profile.name}</h1>
+        <p class="sub">data scientist + BI engineer // retail &amp; logistics</p>
+        <p class="vs">
+          I use data to <span class="hl">cut costs</span> and <span class="hl">speed up delivery</span> in retail and logistics.
+        </p>
+        <div class="actions">
+          <a class="btn" href="/mycalendar">
+            <Icon name="calendar-event" class="size-5" />
+            Let's talk
+          </a>
+          <a class="link" href="/about">Read the profile</a>
+        </div>
+      </div>
+      <ProfileJson />
+    </div>
+  </section>
+
+  <section class="sect" aria-labelledby="work-on">
+    <header class="sect-head">
+      <p class="label"><b>#</b> focus</p>
+      <h2 id="work-on">What I work on</h2>
+    </header>
+    <div>
+      <ul class="focus">
+        {profile.focus.map((f) => <li><strong>{f.title}</strong><span>{f.text}</span></li>)}
+      </ul>
+      <p class="mt-6"><a class="link" href="/about">More about me</a></p>
+    </div>
+  </section>
+
+  {
+    posts.length > 0 && (
+      <section class="sect" aria-labelledby="latest">
+        <header class="sect-head">
+          <p class="label"><b>$</b> ls -lt blog/</p>
+          <h2 id="latest">Latest writing</h2>
+        </header>
+        <div>
+          <ol class="index">
+            {posts.map((post) => <PostCard post={post} />)}
+          </ol>
+          <p class="mt-6"><a class="link" href="/blog">All writing</a></p>
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>

@@ -1,0 +1,115 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ExperienceItem from '../components/ExperienceItem.astro';
+import Icon from '../components/Icon.astro';
+import { profile } from '../data/profile';
+
+const linkedin = 'https://www.linkedin.com/in/alamhanz/';
+---
+
+<BaseLayout title="About | Alamsyah Hanza" description={profile.metaDescription} path="/about">
+  <section class="sect about-intro" aria-labelledby="about-me">
+    <figure>
+      <img src="/images/face.jpg" alt="Portrait of Alamsyah Hanza" width="240" height="300" />
+      <figcaption>// BI Engineer @ Amazon</figcaption>
+    </figure>
+    <div>
+      <p class="label"><b>$</b> cat about.md</p>
+      <h1 id="about-me">{profile.name}</h1>
+      <p class="role">{profile.headline}</p>
+      <p class="lede">{profile.valueStatement}</p>
+      <p class="lede">{profile.summary}</p>
+      <div class="actions">
+        <a class="btn btn-ink" href="/cv"><Icon name="file-cv" class="size-5" />Full details in my CV</a>
+        <a class="link" href={linkedin} rel="noopener">LinkedIn</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="sect" aria-labelledby="glance">
+    <header class="sect-head">
+      <p class="label"><b>#</b> glance</p>
+      <h2 id="glance">At a glance</h2>
+    </header>
+    <dl class="facts">
+      {profile.atAGlance.map((i) => <div><dt>{i.label.toLowerCase()}</dt><dd>{i.value}</dd></div>)}
+    </dl>
+  </section>
+
+  <section class="sect" aria-labelledby="problems">
+    <header class="sect-head">
+      <p class="label"><b>#</b> problems</p>
+      <h2 id="problems">Problems I work on</h2>
+    </header>
+    <ul class="focus">
+      {profile.problems.map((p) => <li><strong>{p.title}</strong><span>{p.text}</span></li>)}
+    </ul>
+  </section>
+
+  <section class="sect" aria-labelledby="experience">
+    <header class="sect-head">
+      <p class="label"><b>#</b> experience</p>
+      <h2 id="experience">Experience</h2>
+    </header>
+    <ol class="jobs">
+      {profile.experience.map((e) => <ExperienceItem {...e} />)}
+    </ol>
+  </section>
+
+  <section class="sect" aria-labelledby="skills">
+    <header class="sect-head">
+      <p class="label"><b>#</b> skills</p>
+      <h2 id="skills">Skills</h2>
+    </header>
+    <div>
+      <div class="skills">
+        {
+          profile.skillGroups.map((g) => (
+            <div>
+              <h3>{g.title}</h3>
+              <ul class="tags">
+                {g.items.map((i) => <li class="tag">{i}</li>)}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+      <ul class="tools" aria-label="Tools">
+        {
+          profile.skillLogos.map((logo) => (
+            <li>
+              {logo.image ? (
+                <img src={logo.image} alt="" width="24" height="24" loading="lazy" />
+              ) : (
+                <Icon name={logo.icon ?? ''} class="size-6" />
+              )}
+              {logo.name.toLowerCase()}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="sect edu" aria-labelledby="education">
+    <header class="sect-head">
+      <p class="label"><b>#</b> education</p>
+      <h2 id="education">Education and certificates</h2>
+    </header>
+    <div>
+      <h3>{profile.education.degree}, {profile.education.school}</h3>
+      <p class="mono-sm">{profile.education.detail.replace(' - ', ' .. ')}</p>
+      <ul>
+        {profile.certificates.map((c) => <li>{c}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <aside class="cv-note" aria-label="CV">
+    <div>
+      <p>Full details in my CV</p>
+      <small>{profile.cvNote}</small>
+    </div>
+    <a class="btn btn-ink" href="/cv"><Icon name="file-cv" class="size-5" />Open CV</a>
+  </aside>
+</BaseLayout>

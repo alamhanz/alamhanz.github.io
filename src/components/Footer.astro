@@ -1,0 +1,28 @@
+---
+import { site } from '../data/site';
+import { profile } from '../data/profile';
+import Icon from './Icon.astro';
+import SocialLinks from './SocialLinks.astro';
+---
+
+<footer class="site-foot dark">
+  <div class="wrap">
+    <p class="prompt">echo "let's talk"</p>
+    <h2>Let's talk<em>.</em></h2>
+    <p class="c">{profile.closing}</p>
+    <div class="actions">
+      <a class="btn" href="/mycalendar">
+        <Icon name="calendar-event" class="size-5" />
+        Book a call
+      </a>
+    </div>
+    <div class="foot-row">
+      <span>&copy; {new Date().getFullYear()} alamhanz</span>
+      <div class="foot-links">
+        <a href={site.mediumUrl} rel="noopener">medium archive</a>
+        <a href="/rss.xml"><Icon name="rss" class="size-4" />rss</a>
+      </div>
+      <SocialLinks />
+    </div>
+  </div>
+</footer>

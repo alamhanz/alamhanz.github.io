@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - v2
+  pull_request:
+    branches:
+      - v2
+      - xyz
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Stage (extensionless pages)
+        run: bash scripts/stage-dist.sh dist _stage/site
+
+      - name: Check routes
+        run: node scripts/check-routes.mjs _stage/site

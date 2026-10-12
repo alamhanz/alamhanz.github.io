@@ -1,0 +1,16 @@
+---
+import { site } from '../data/site';
+import Icon from './Icon.astro';
+---
+
+<ul class="socials">
+  {
+    site.socials.map((s) => (
+      <li>
+        <a href={s.href} aria-label={s.label} rel="noopener">
+          <Icon name={s.icon} class="size-6" />
+        </a>
+      </li>
+    ))
+  }
+</ul>
