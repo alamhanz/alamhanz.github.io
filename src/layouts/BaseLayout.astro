@@ -23,14 +23,15 @@ const props = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <SEO {...props} />
   </head>
-  <body class="bg-body text-theme text-base md:text-lg leading-relaxed flex flex-col min-h-screen">
+  <body class="bg-body flex flex-col min-h-screen">
     <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-3">Skip to content</a>
-    <div class="page-bg flex-grow">
-      <Header />
-      <main id="main" class="mx-auto w-full max-w-5xl px-5 pb-24 pt-8 md:pt-12">
+    <Header />
+    <main id="main" class="flex-grow">
+      <slot name="hero" />
+      <div class="wrap">
         <slot />
-      </main>
-    </div>
+      </div>
+    </main>
     <Footer />
   </body>
 </html>

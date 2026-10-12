@@ -1,0 +1,11 @@
+---
+import { profile } from '../data/profile';
+
+const rows = Object.entries(profile.json);
+---
+
+<div class="window" role="group" aria-label="Profile summary">
+  <div class="window-bar" aria-hidden="true"><i></i><i></i><i></i><span>profile.json</span></div>
+  <pre class="json"><span class="p">{'{'}</span>
+{rows.map(([k, v], i) => (<Fragment>  <span class="k">"{k}"</span><span class="p">:</span> <span class="s">"{v}"</span>{i < rows.length - 1 && <span class="p">,</span>}{'\n'}</Fragment>))}<span class="p">{'}'}</span></pre>
+</div>
