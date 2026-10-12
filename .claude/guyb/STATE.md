@@ -8,14 +8,24 @@ Personal website (alamhanz.xyz): Astro 7 static site (v2) with Tailwind CSS v4, 
 
 ## Current Status
 - **v2 Astro site is LIVE** at alamhanz.xyz: the cutover PR #8 (v2 -> xyz) and the follow-up hero fix PR #9 (fix/home-hero -> xyz) are merged, and both deploy runs on xyz succeeded (verified with gh, 2026-10-12).
-- **In progress**: branch `feat/blog-manager` (6 commits ahead of origin/xyz: blog manager backend, UI, smoke tests, review fixes) is about to be reviewed and opened as a PR into xyz.
-- **Deployed by**: owner (admin bypass of 1-approval + signed-commits protection)
+- **Blog manager merged** (PR #10): local-only tool in `tools/blog-manager/`; `npm run blog:smoke` passes 19/19. No real post written with it yet.
+- **UI fixes merged** (PR #11): no backticks on inline code in posts; 44px mobile tap targets on 6 text links. Live and verified.
+- **404 page**: GCS bucket error page is now 404.html; a missing path returns 404 with the "Not found | Alamsyah Hanza" page.
+- **Live responsive check passed**: no overflow, nav works, no console errors at 375-1440 px.
+- **Deployed by**: owner (admin bypass of signed-commits protection; agent commits are unsigned)
 
 ## Deployed Versions
-- xyz (production): v2 Astro site, includes merged PRs #8 and #9 (exact SHA: `gh run list --branch xyz`)
+- xyz (production): 5ac634c (v2 Astro site + blog manager + UI fixes; deploy run 38226981186 succeeded)
 - main (GitHub default, not used): 51ade94 (stale, diverged from xyz)
 
 ## Recent Changes (Log)
+- 2026-10-12: PR #11 fix/ui-nits -> xyz merged; live and verified (run alamhanz.github.io-40)
+- 2026-10-12: 404 fix: bucket error page index.html -> 404.html (run -39). Rollback: `gcloud storage buckets update gs://alamhanz.xyz --web-main-page-suffix=index.html --web-error-page=index.html` (this gcloud uses --web-error-page, not --web-not-found-page)
+- 2026-10-12: PR #10 feat/blog-manager -> xyz merged (5ac634c); review run -33 approved with fixes, run -38 applied them (cover validation, pre-publish meta validation, global publish lock, list survives malformed front matter); deploy 38226981186 succeeded
+- 2026-10-12: CLAUDE.md and ci.yml updated post-cutover: work branches off xyz, CI runs on PRs into xyz
+- 2026-10-12: branch cleanup (run -37): deleted remote feat/v2-astro, feat/v2-concept-d, fix/home-hero, v2, feat/blog-manager. Remaining: main, base, dev, self-dev, xyz
+- 2026-10-12: xyz protection (run -37): required approvals 1 -> 0; signed commits and conversation resolution kept
+- 2026-10-12: live responsive check at 375-1440 px passed (run -35)
 - 2026-10-12: PR #9 fix/home-hero -> xyz merged; deploy succeeded (run alamhanz.github.io-32, git-ops)
 - 2026-10-12: PR #8 v2 -> xyz (cutover) merged; v2 Astro site live. Earlier PRs also merged: #4 chore/session-docs -> xyz, #5 chore/guyb-state-move -> xyz, #6 feat/v2-astro -> v2, #7 feat/v2-concept-d -> v2
 - 2026-10-12: feat/blog-manager branch built (local blog manager backend, UI, smoke tests, review fixes; 871cfb0 is tip); not yet merged
@@ -31,11 +41,16 @@ Personal website (alamhanz.xyz): Astro 7 static site (v2) with Tailwind CSS v4, 
 - **OG image**: keep face.jpg / hello3.jpg
 - **Unused v1 files**: kept on purpose in `legacy/` (old-lyceum.txt, source.txt, unused images)
 - **Blog manager**: local-only tool (`tools/blog-manager/`, not built or deployed); publish = PR to xyz from `post/<slug>`
+- **Branches**: owner chose to leave `main` alone and keep base/dev/self-dev
+- **xyz protection**: 0 approvals, signed commits kept; owner merges with bypass because agent commits are unsigned
 
 ## Open Issues
-- Drifted doc: `.claude/CLAUDE.md` still says v2 is unmerged ("live `xyz` is still the v1 plain-HTML site until `v2` is merged into `xyz`"); needs the owner/orchestrator to edit
-- xyz protection may be too strict for solo PRs (1 approval + signed commits); relaxing is in progress (see Next Up)
-- Stale remote branches: base, dev, self-dev, feat/v2-astro, feat/v2-concept-d, fix/home-hero, v2 (all merged or obsolete); `main` diverged from xyz, decision pending
+- (resolved) blog manager PR: merged as #10
+- (resolved) stale branch cleanup: done (run -37); main/base/dev/self-dev intentionally kept
+- (resolved) xyz protection relaxed to 0 approvals
+- (resolved) responsive check of live site passed (run -35)
+- (resolved) `.claude/CLAUDE.md` drift: updated for the live v2 and xyz-based workflow
+- (resolved) bucket 404 served index.html; now 404.html
 - (resolved) GCP project/region recorded in CLAUDE.md
 - (resolved) workflow actions bumped to checkout@v4, auth@v2, setup-gcloud@v2
 - (resolved) merged branch cleanup/site-structure deleted
@@ -44,8 +59,6 @@ Personal website (alamhanz.xyz): Astro 7 static site (v2) with Tailwind CSS v4, 
 - (resolved) "browser testing at phone/desktop widths not done" was for v1; superseded by the v2 responsive check below
 
 ## Next Up
-- In progress: review `feat/blog-manager` and open it as a PR into xyz
-- In progress: stale-branch cleanup (base, dev, self-dev, feat/v2-astro, feat/v2-concept-d, fix/home-hero, v2) plus a decision on `main`
-- In progress: relax xyz protection for solo PRs (e.g. 0 approvals)
-- In progress: responsive check of the live site at phone and desktop widths (run alamhanz.github.io-35)
-- After cutover: update `.claude/CLAUDE.md` to describe v2 as live (and fix the `v2` branch workflow lines once `v2` is deleted)
+- Write the first real blog post with the blog manager
+- Optional: set up commit signing so the protection bypass isn't needed
+- Optional, later: revisit base/dev/self-dev/main (currently kept on purpose)
