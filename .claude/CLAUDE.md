@@ -24,7 +24,7 @@ Astro 7 static site (v2, branch `v2` / `feat/v2-astro`; live `xyz` is still the 
 
 ## Deploy
 - `.github/workflows/deploy_web.yml` on push to `xyz`: build, `scripts/stage-dist.sh` (every `dist/**/*.html` except index/404 becomes an extensionless object; `blog.html` stays `.html` locally because `blog/` is a directory and is uploaded to object `blog` by the workflow), `gcloud storage rsync --delete-unmatched-destination-objects` to `gs://alamhanz.xyz`, then content-type and cache headers
-- The sync excludes (never uploads or deletes) bucket-only `images/hello.jpg`, `images/hello2.jpg`, `images/hello3.jpg`, `about.txt`
+- The sync excludes (never uploads or deletes) bucket-only `images/hello.jpg`, `images/hello2.jpg`, `images/hello3.jpg`, `about.txt`, and the v1 lyceum page set: `lyceum`, `tailwind.css`, `navi-pilot.js`, `images/lyceum-logo.jpg` (the lyceum page also uses `public/images/` svgs/ico: docker, google-cloud, jupyter, Pandas_mark, python, tableau, prod_man, so keep them there or add them to EXCLUDE)
 - `.github/workflows/ci.yml`: build + stage + route check on push to `v2` and PRs into `v2`/`xyz`
 - New top-level pages need no workflow change; internal links are absolute and extensionless (`/about`)
 - Optional Cloudflare purge runs only if `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ZONE_ID` secrets exist
