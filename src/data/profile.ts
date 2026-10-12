@@ -47,7 +47,6 @@ export const profile = {
   json: {
     now: 'Business Intelligence Engineer, Amazon',
     based,
-    before: 'Roms, Gojek',
     industries: 'Retail, logistics, supply chain',
     strengths: 'Optimization, data modeling, statistics (A/B testing), ETL / data pipelines, dashboarding, data analysis & exploration',
     also: 'Leads teams and runs a data science community',
