@@ -5,91 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Blog manager</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="/vendor/easymde.min.css">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+  <header class="app-head" id="app-head">
+    <a class="brand" href="#/">Blog manager</a>
+    <span class="spacer"></span>
+    <span id="chip-astro" class="chip" role="status"></span>
+    <span id="chip-gh" class="chip" role="status"></span>
+    <button id="new-btn" type="button" class="btn dark">Write a story</button>
+  </header>
   <div id="banners" role="status"></div>
-  <div class="layout">
-    <aside class="sidebar" aria-label="Posts">
-      <div class="side-head">
-        <h1>Blog manager</h1>
-        <button id="new-btn" type="button" class="primary">New post</button>
-      </div>
-      <ul id="post-list" class="post-list"></ul>
-    </aside>
+  <main id="view"></main>
 
-    <section class="editor" id="editor" hidden aria-label="Editor">
-      <div class="bar">
-        <span id="save-state" class="save-state" aria-live="polite">Saved</span>
-        <span class="spacer"></span>
-        <button id="publish-btn" type="button" class="primary">Publish (open PR)</button>
-        <button id="unpublish-btn" type="button">Unpublish</button>
-        <button id="delete-btn" type="button" class="danger">Delete</button>
-      </div>
-      <div id="publish-result" class="notice" hidden></div>
-
-      <form id="meta" class="meta" autocomplete="off" onsubmit="return false">
-        <label>Title <input id="f-title" type="text" maxlength="200"></label>
-        <label>Slug <input id="f-slug" type="text" readonly title="The slug is the file name and URL, so it is fixed once the post exists. Pick it in New post."> <small class="hint">Fixed after creation (it is the file name and URL).</small></label>
-        <label class="wide">Description <input id="f-desc" type="text" maxlength="500"></label>
-        <label>Date <input id="f-date" type="date"></label>
-        <label>Tags
-          <div class="chips" id="chips">
-            <input id="f-tag" type="text" maxlength="40" placeholder="add tag, press Enter" aria-label="Add tag">
-          </div>
-        </label>
-        <div class="wide cover">
-          <span class="label">Cover</span>
-          <img id="cover-thumb" alt="" hidden>
-          <input id="cover-file" type="file" accept=".png,.jpg,.jpeg,.webp,.gif,.avif,.svg,image/*" aria-label="Upload cover image">
-          <button id="cover-clear" type="button" hidden>Remove cover</button>
-          <label class="inline">Cover alt text <input id="f-cover-alt" type="text" maxlength="300"></label>
-        </div>
-      </form>
-
-      <textarea id="body" aria-label="Post body"></textarea>
-    </section>
-
-    <section class="preview" id="preview" hidden aria-label="Live preview">
-      <div class="bar">
-        <span>Live preview</span>
-        <span class="spacer"></span>
-        <a id="open-tab" href="#" target="_blank" rel="noopener">Open in tab</a>
-      </div>
-      <iframe id="frame" title="Post preview"></iframe>
-    </section>
-
-    <p id="empty" class="empty">Select a post or create a new one.</p>
-  </div>
-
-  <dialog id="new-dialog">
+  <dialog id="new-dialog" aria-labelledby="new-title">
     <form method="dialog" id="new-form">
-      <h2>New post</h2>
+      <h2 id="new-title">Write a story</h2>
       <label>Title <input id="n-title" type="text" required maxlength="200"></label>
       <label>Slug <input id="n-slug" type="text" required maxlength="80" pattern="[a-z0-9]+(-[a-z0-9]+)*"></label>
       <label>Description <input id="n-desc" type="text" maxlength="500"></label>
       <p id="n-error" class="error" role="alert"></p>
       <div class="actions">
-        <button type="button" id="n-cancel">Cancel</button>
-        <button type="submit" class="primary">Create draft</button>
+        <button type="button" class="btn" id="n-cancel">Cancel</button>
+        <button type="submit" class="btn dark">Create draft</button>
       </div>
     </form>
   </dialog>
 
-  <dialog id="delete-dialog">
+  <dialog id="delete-dialog" aria-labelledby="delete-title">
     <form method="dialog" id="delete-form">
-      <h2>Delete post</h2>
+      <h2 id="delete-title">Delete post</h2>
       <p>This removes the Markdown file and its images. Type <strong id="d-slug"></strong> to confirm.</p>
-      <input id="d-input" type="text" aria-label="Type the slug to confirm">
+      <input id="d-input" type="text" aria-label="Type the slug to confirm" autocomplete="off">
+      <p id="d-error" class="error" role="alert"></p>
       <div class="actions">
-        <button type="button" id="d-cancel">Cancel</button>
-        <button type="submit" class="danger" id="d-ok" disabled>Delete</button>
+        <button type="button" class="btn" id="d-cancel">Cancel</button>
+        <button type="submit" class="btn danger" id="d-ok" disabled>Delete</button>
       </div>
     </form>
   </dialog>
 
-  <script src="/vendor/easymde.min.js"></script>
+  <dialog id="publish-dialog" class="wide" aria-labelledby="pub-title"></dialog>
+
   <script type="module" src="/app.js"></script>
 </body>
 </html>

@@ -80,13 +80,14 @@ async function unit() {
     await new Promise((r) => tcp.close(r));
     assert.equal(await astroReachable(port, 500), false);
   });
-  await ok('UI: editor slug is read-only but explained, new-post slug is editable', async () => {
-    const html = await fs.readFile(path.join(path.dirname(fileURLToPath(import.meta.url)), 'ui', 'index.html'), 'utf8');
+  await ok('UI: new-post slug is editable; editor slug is editable only for drafts (rename) and explained', async () => {
+    const here = path.dirname(fileURLToPath(import.meta.url));
+    const html = await fs.readFile(path.join(here, 'ui', 'index.html'), 'utf8');
     const tag = (id) => new RegExp(`<input[^>]*id="${id}"[^>]*>`).exec(html)?.[0] ?? '';
-    assert.match(tag('f-slug'), /\breadonly\b/);
-    assert.match(tag('f-slug'), /title="[^"]+"/);
-    assert.match(html, /class="hint"/);
-    assert.doesNotMatch(tag('n-slug'), /\b(readonly|disabled)\b/);
+    assert.doesNotMatch(tag('n-slug'), /(readonly|disabled)/);
+    const page = await fs.readFile(path.join(here, 'ui', 'src', 'editor-page.js'), 'utf8');
+    assert.match(page, /readOnly: !isDraft/);
+    assert.match(page, /className: 'hint'/);
   });
 }
 
