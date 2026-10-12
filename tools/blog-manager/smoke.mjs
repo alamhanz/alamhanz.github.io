@@ -179,6 +179,21 @@ async function serverTests() {
       assert.equal((await request(port, 'GET', '/api/posts/smoke-test/images/v.svg')).headers['content-security-policy'], 'sandbox');
     });
 
+    await ok('image upload never overwrites: same name gets -2, -3', async () => {
+      const a = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+      const b = Buffer.concat([a, Buffer.from('b')]);
+      const c = Buffer.concat([a, Buffer.from('c')]);
+      const r1 = await request(port, 'PUT', '/api/posts/smoke-test/images?name=image.png', { body: a });
+      const r2 = await request(port, 'PUT', '/api/posts/smoke-test/images?name=image.png', { body: b });
+      const r3 = await request(port, 'PUT', '/api/posts/smoke-test/images?name=Image.PNG', { body: c });
+      assert.deepEqual([r1.data.path, r2.data.path, r3.data.path].map((p) => p.split('/').pop()), ['image.png', 'image-2.png', 'image-3.png']);
+      for (const [file, want] of [['image.png', a], ['image-2.png', b], ['image-3.png', c]]) {
+        const got = await request(port, 'GET', `/api/posts/smoke-test/images/${file}`);
+        assert.equal(got.status, 200);
+        assert.ok(got.raw.equals(want), `${file} content`);
+      }
+    });
+
     await ok('traversal and bad slugs rejected with 400', async () => {
       for (const s of ['..', '%2e%2e', 'a%2fb', '..%5cx', '%2e%2e%2f%2e%2e%2fpackage.json', 'C%3A%5Cx', 'A', 'a%00b']) {
         const r = await jreq(port, 'GET', `/api/posts/${s}`);

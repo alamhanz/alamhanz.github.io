@@ -72,6 +72,22 @@ async function step(name, fn) {
     throw err;
   }
 }
+const pasteImage = (name, buf) =>
+  page.evaluate(
+    async ({ name, b64 }) => {
+      const bin = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+      const dt = new DataTransfer();
+      dt.items.add(new File([bin], name, { type: 'image/png' }));
+      document.querySelector('.cm-content').dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+    },
+    { name, b64: buf.toString('base64') },
+  );
+const goBack = () => page.click('.topbar a:has-text("Stories")');
+const isPostPut = (route) => route.request().method() === 'PUT';
+// failed requests on purpose: Chromium logs them as console errors, which are not product problems
+const forgetNetworkNoise = () => {
+  for (let i = problems.length - 1; i >= 0; i--) if (/Failed to load resource/.test(problems[i])) problems.splice(i, 1);
+};
 const settled = () => page.waitForTimeout(1600); // autosave is 1000ms
 
 try {
@@ -183,6 +199,127 @@ try {
     await page.waitForFunction(() => !document.body.textContent.includes('My First Story'));
     assert.deepEqual(await fs.readdir(posts), ['published-one.md']);
     await assert.rejects(fs.access(path.join(root, 'src', 'assets', 'blog', 'my-story')));
+  });
+
+  await step('published post: Ctrl+S, Publish dialog and leaving never write an unedited post', async () => {
+    const file = path.join(posts, 'published-one.md');
+    const before = { text: await read('published-one.md'), mtime: (await fs.stat(file)).mtimeMs };
+    await page.goto(`${base}/#/edit/published-one`);
+    await page.waitForSelector('.cm-content');
+    await page.waitForTimeout(300);
+    await page.keyboard.press('Control+s');
+    await page.click('button:has-text("Publish update")');
+    await page.click('#publish-dialog button:has-text("Cancel")');
+    await goBack();
+    await page.waitForSelector('.stabs');
+    await settled();
+    assert.equal(await read('published-one.md'), before.text);
+    assert.equal((await fs.stat(file)).mtimeMs, before.mtime, 'file was rewritten');
+  });
+
+  await step('new draft for the editor flow checks', async () => {
+    await page.click('#new-btn');
+    await page.fill('#n-title', 'Media Story');
+    await page.fill('#n-slug', 'media-story');
+    await page.click('#new-form button[type=submit]');
+    await page.waitForSelector('.cm-content');
+    await page.click('.cm-content');
+    await page.keyboard.type('Intro line.');
+    await settled();
+  });
+
+  const assets = path.join(root, 'src', 'assets', 'blog', 'media-story');
+  await step('pasting two images with the same name keeps both files', async () => {
+    const second = Buffer.concat([PNG, Buffer.from('second')]);
+    await pasteImage('image.png', PNG);
+    await page.waitForSelector('.cm-image img');
+    await pasteImage('image.png', second);
+    await page.waitForFunction(() => document.querySelectorAll('.cm-image img').length === 2);
+    await settled();
+    const md = await read('media-story.md');
+    assert.match(md, /media-story\/image\.png\)/);
+    assert.match(md, /media-story\/image-2\.png\)/);
+    assert.ok(PNG.equals(await fs.readFile(path.join(assets, 'image.png'))));
+    assert.ok(second.equals(await fs.readFile(path.join(assets, 'image-2.png'))));
+  });
+
+  await step('leaving with an upload in flight waits for it and never saves the placeholder', async () => {
+    await page.route('**/api/posts/media-story/images*', async (route) => {
+      await new Promise((r) => setTimeout(r, 2000));
+      await route.continue();
+    });
+    await page.click('.cm-content');
+    await page.keyboard.press('Control+End');
+    await pasteImage('slow.png', PNG);
+    await page.waitForTimeout(1400); // the 1s autosave fires while the upload is still running
+    assert.doesNotMatch(await read('media-story.md'), /Uploading/);
+    await goBack();
+    await page.waitForSelector('.stabs', { timeout: 8000 });
+    await page.unroute('**/api/posts/media-story/images*');
+    const md = await read('media-story.md');
+    assert.doesNotMatch(md, /Uploading/);
+    assert.match(md, /media-story\/slow\.png\)/);
+  });
+
+  await step('leaving while a save is in flight: one save at a time, latest text wins', async () => {
+    await page.goto(`${base}/#/edit/media-story`);
+    await page.waitForSelector('.cm-content');
+    let inFlight = 0;
+    let overlap = false;
+    await page.route('**/api/posts/media-story', async (route) => {
+      if (!isPostPut(route)) return route.continue();
+      overlap ||= ++inFlight > 1;
+      await new Promise((r) => setTimeout(r, 900));
+      await route.continue();
+      inFlight--;
+    });
+    await page.click('.cm-content');
+    await page.keyboard.press('Control+Home');
+    await page.keyboard.press('End');
+    await page.keyboard.type(' AAA');
+    await page.waitForTimeout(1300); // autosave PUT is now in flight
+    await page.keyboard.type('BBB');
+    await goBack();
+    await page.waitForSelector('.stabs', { timeout: 8000 });
+    await page.unroute('**/api/posts/media-story');
+    assert.equal(overlap, false, 'two PUTs overlapped');
+    assert.match(await read('media-story.md'), / AAABBB/);
+  });
+
+  await step('failed save on leaving keeps the user on the page, Retry then saves', async () => {
+    await page.goto(`${base}/#/edit/media-story`);
+    await page.waitForSelector('.cm-content');
+    await page.route('**/api/posts/media-story', (route) => (isPostPut(route) ? route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":"disk on fire"}' }) : route.continue()));
+    await page.click('.cm-content');
+    await page.keyboard.press('Control+Home');
+    await page.keyboard.press('End');
+    await page.keyboard.type(' CCC');
+    await goBack();
+    await page.waitForSelector('.save-state.err');
+    assert.match(await page.textContent('.save-state'), /disk on fire/);
+    assert.match(page.url(), /#\/edit\/media-story$/);
+    await page.waitForSelector('.cm-content');
+    await page.unroute('**/api/posts/media-story');
+    await page.click('.save-state button:has-text("Retry")');
+    await page.waitForSelector('text=/Saved/');
+    assert.match(await read('media-story.md'), / AAABBB CCC/);
+    await goBack();
+    await page.waitForSelector('.stabs');
+    forgetNetworkNoise();
+  });
+
+  await step('selection toolbar Link flow wraps the selection in a Markdown link', async () => {
+    await page.goto(`${base}/#/edit/media-story`);
+    await page.waitForSelector('.cm-content');
+    await page.locator('.cm-line').first().click();
+    await page.keyboard.press('Control+Home');
+    await page.keyboard.press('Control+Shift+ArrowRight');
+    await page.waitForSelector('.cm-sel-toolbar');
+    await page.click('.cm-sel-link');
+    await page.fill('.cm-sel-linkform input', 'example.com');
+    await page.keyboard.press('Enter');
+    await settled();
+    assert.match(await read('media-story.md'), /\[Intro\]\(https:\/\/example\.com\/?\)/);
   });
 
   await step('no console errors, warnings, page errors or CSP violations', () => {
