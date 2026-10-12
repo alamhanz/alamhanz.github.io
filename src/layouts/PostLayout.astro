@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { Image, getImage } from 'astro:assets';
 import BaseLayout from './BaseLayout.astro';
 
 interface Props {
@@ -7,11 +8,12 @@ interface Props {
 }
 
 const { post } = Astro.props;
-const { title, description, pubDate, updatedDate, tags } = post.data;
+const { title, description, pubDate, updatedDate, tags, cover, coverAlt } = post.data;
+const og = cover ? await getImage({ src: cover, width: 1200, height: 630, fit: 'cover', format: 'jpeg' }) : undefined;
 const fmt = (d: Date) => d.toISOString().slice(0, 10);
 ---
 
-<BaseLayout title={`${title} | Alamsyah Hanza`} description={description} path={`/blog/${post.id}`} type="article">
+<BaseLayout title={`${title} | Alamsyah Hanza`} description={description} path={`/blog/${post.id}`} type="article" image={og?.src}>
   <article class="pt-12 md:pt-16">
     <a class="link text-sm" href="/blog">&larr; All posts</a>
     <h1 class="font-bold text-4xl md:text-6xl leading-tight mt-6" style="letter-spacing:-0.03em">{title}</h1>
@@ -26,6 +28,11 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10);
             <li class="tag">#{t}</li>
           ))}
         </ul>
+      )
+    }
+    {
+      cover && (
+        <Image src={cover} alt={coverAlt} width={1200} height={630} fit="cover" class="mt-8 w-full h-auto border border-theme/20" loading="eager" />
       )
     }
     <div
