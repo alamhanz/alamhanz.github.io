@@ -372,6 +372,62 @@ async function serverTests() {
       }
     });
 
+    await ok('rename: draft moves file and images, rewrites paths, original gone', async () => {
+      const blog = path.join(root, 'src', 'content', 'blog');
+      assert.equal((await jreq(port, 'POST', '/api/posts', { title: 'Old Name', slug: 'old-name', description: 'd' })).status, 201);
+      const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+      await request(port, 'PUT', '/api/posts/old-name/images?name=cover.png', { body: png });
+      await request(port, 'PUT', '/api/posts/old-name/images?name=pic.png', { body: png });
+      const meta = (await jreq(port, 'GET', '/api/posts/old-name')).data.meta;
+      const body = 'Intro ![](../../assets/blog/old-name/pic.png)\n\n![x](../../assets/blog/other/keep.png)\n';
+      await jreq(port, 'PUT', '/api/posts/old-name', { meta: { ...meta, cover: '../../assets/blog/old-name/cover.png', coverAlt: 'alt' }, body });
+      const r = await jreq(port, 'POST', '/api/posts/old-name/rename', { slug: 'new-name' });
+      assert.equal(r.status, 200);
+      assert.equal(r.data.slug, 'new-name');
+      await assert.rejects(fs.access(path.join(blog, 'old-name.md')));
+      await assert.rejects(fs.access(path.join(root, 'src', 'assets', 'blog', 'old-name')));
+      await fs.access(path.join(root, 'src', 'assets', 'blog', 'new-name', 'pic.png'));
+      const got = (await jreq(port, 'GET', '/api/posts/new-name')).data;
+      assert.equal(got.meta.cover, '../../assets/blog/new-name/cover.png');
+      assert.equal(got.meta.draft, true);
+      assert.equal(got.body, 'Intro ![](../../assets/blog/new-name/pic.png)\n\n![x](../../assets/blog/other/keep.png)\n');
+      assert.equal((await jreq(port, 'GET', '/api/posts/old-name')).status, 404);
+      assert.equal((await request(port, 'GET', '/api/posts/new-name/images/pic.png')).status, 200);
+    });
+
+    await ok('rename refuses published posts, existing targets, bad slugs and traversal', async () => {
+      const blog = path.join(root, 'src', 'content', 'blog');
+      const rename = (from, slug, headers) => jreq(port, 'POST', `/api/posts/${from}/rename`, { slug }, headers);
+      await jreq(port, 'POST', '/api/posts', { title: 'Other One', slug: 'other-one' });
+      // existing target (post file, and a leftover image folder)
+      let r = await rename('new-name', 'other-one');
+      assert.equal(r.status, 409);
+      await fs.mkdir(path.join(root, 'src', 'assets', 'blog', 'free-name'), { recursive: true });
+      assert.equal((await rename('new-name', 'free-name')).status, 409);
+      await fs.rm(path.join(root, 'src', 'assets', 'blog', 'free-name'), { recursive: true });
+      // bad slugs and traversal never touch the disk
+      const before = (await fs.readdir(blog)).sort();
+      for (const bad of ['', 'Bad Slug', '../escape', '..\\escape', 'a/b', '%2e%2e', 'a--b', 'con', null, 5, 'x'.repeat(81)]) {
+        r = await rename('new-name', bad);
+        assert.equal(r.status, 400, `slug ${JSON.stringify(bad)} -> ${r.status}`);
+      }
+      assert.equal((await rename('new-name', 'new-name')).status, 400);
+      assert.equal((await rename('..%2f..%2fpackage', 'ok-name')).status, 400);
+      assert.equal((await rename('missing-post', 'ok-name')).status, 404);
+      assert.equal((await rename('new-name', 'ok-name', { Origin: 'http://evil.example' })).status, 403);
+      assert.deepEqual((await fs.readdir(blog)).sort(), before);
+      // published posts are refused
+      const meta = (await jreq(port, 'GET', '/api/posts/other-one')).data.meta;
+      await fs.writeFile(path.join(blog, 'other-one.md'), serialize({ ...meta, draft: false }, 'Live\n'));
+      r = await rename('other-one', 'renamed-live');
+      assert.equal(r.status, 409);
+      assert.match(r.data.error, /Only drafts/);
+      await fs.access(path.join(blog, 'other-one.md'));
+      await assert.rejects(fs.access(path.join(blog, 'renamed-live.md')));
+      assert.equal((await jreq(port, 'DELETE', '/api/posts/other-one')).status, 200);
+      assert.equal((await jreq(port, 'DELETE', '/api/posts/new-name')).status, 200);
+    });
+
     await ok('delete removes post and images; missing is 404', async () => {
       assert.equal((await jreq(port, 'DELETE', '/api/posts/smoke-test')).status, 200);
       await assert.rejects(fs.access(path.join(root, 'src', 'assets', 'blog', 'smoke-test')));

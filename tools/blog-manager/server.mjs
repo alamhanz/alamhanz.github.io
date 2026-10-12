@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildUi } from './bundle.mjs';
 import { MAX_IMAGE_BYTES, listImages, readImage, saveImage } from './images.mjs';
-import { HttpError, REPO_ROOT, assertSlug, createPost, deletePost, getRoot, listPosts, readPost, safeJoin, savePost, setDraft } from './posts.mjs';
+import { HttpError, REPO_ROOT, assertSlug, createPost, deletePost, getRoot, listPosts, readPost, renamePost, safeJoin, savePost, setDraft } from './posts.mjs';
 import { defaultRun, ghStatus, publishPost } from './publish.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -145,6 +145,10 @@ export function createManagerServer({ port, astroPort, root = getRoot(), run = d
     if (sub === 'unpublish' && parts.length === 3 && method === 'POST') {
       await setDraft(slug, true, root);
       return sendJson(res, 200, { ok: true });
+    }
+    if (sub === 'rename' && parts.length === 3 && method === 'POST') {
+      const body = await readJson(req);
+      return sendJson(res, 200, await renamePost(slug, body.slug, root));
     }
     if (sub === 'publish' && parts.length === 3 && method === 'POST') {
       const body = await readJson(req);
