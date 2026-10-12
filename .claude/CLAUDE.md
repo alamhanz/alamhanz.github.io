@@ -1,6 +1,6 @@
 # alamhanz.github.io: personal website (alamhanz.xyz)
 
-Astro 7 static site (v2, branch `v2` / `feat/v2-astro`; live `xyz` is still the v1 plain-HTML site until `v2` is merged into `xyz`). Pages: home, about (data-driven), blog (Markdown, RSS, sitemap), redirects for cv (Google Drive PDF) and mycalendar. No lyceum page in v2.
+Astro 7 static site (v2), live at alamhanz.xyz since the v2 -> xyz cutover (PR #8, 2026-10-12). Pages: home, about (data-driven), blog (Markdown, RSS, sitemap), redirects for cv (Google Drive PDF) and mycalendar. No lyceum page in v2.
 
 ## Stack
 - Astro 7 (Node >= 22.12), `build.format: 'file'`, `trailingSlash: 'never'`, output in `dist/`
@@ -14,7 +14,7 @@ Astro 7 static site (v2, branch `v2` / `feat/v2-astro`; live `xyz` is still the 
 - GitHub: alamhanz/alamhanz.github.io, remote over HTTPS (gh credentials)
 - `xyz` = production branch; pushing or merging into it deploys. `main` is the GitHub default but not used for deploys
 - `xyz` is protected: 1 approval + signed commits + resolved conversations. As the only maintainer, merge PRs on GitHub by ticking "Merge without waiting for requirements (bypass rules)"
-- v2 work: feature branches off `v2`, PRs into `v2`; cutover = PR `v2` -> `xyz` (owner-triggered)
+- Work: feature branches off `xyz`, PRs into `xyz`
 
 ## Commands
 - Install: `npm ci` (or `npm install`)
@@ -30,7 +30,7 @@ Astro 7 static site (v2, branch `v2` / `feat/v2-astro`; live `xyz` is still the 
 ## Deploy
 - `.github/workflows/deploy_web.yml` on push to `xyz`: build, `scripts/stage-dist.sh` (every `dist/**/*.html` except index/404 becomes an extensionless object; `blog.html` stays `.html` locally because `blog/` is a directory and is uploaded to object `blog` by the workflow), `gcloud storage rsync --delete-unmatched-destination-objects` to `gs://alamhanz.xyz`, then content-type and cache headers
 - The sync excludes (never uploads or deletes) bucket-only `images/hello.jpg`, `images/hello2.jpg`, `images/hello3.jpg`, `about.txt`, and the v1 lyceum page set: `lyceum`, `tailwind.css`, `navi-pilot.js`, `images/lyceum-logo.jpg` (the lyceum page also uses `public/images/` svgs/ico: docker, google-cloud, jupyter, Pandas_mark, python, tableau, prod_man, so keep them there or add them to EXCLUDE)
-- `.github/workflows/ci.yml`: build + stage + route check on push to `v2` and PRs into `v2`/`xyz`
+- `.github/workflows/ci.yml`: build + stage + route check on PRs into `xyz`
 - New top-level pages need no workflow change; internal links are absolute and extensionless (`/about`)
 - Optional Cloudflare purge runs only if `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ZONE_ID` secrets exist
 - Verify: `gh run list --branch xyz`, then curl https://alamhanz.xyz/<page>
