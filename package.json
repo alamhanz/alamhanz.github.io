@@ -12,7 +12,8 @@
     "preview": "astro preview",
     "check:routes": "bash scripts/stage-dist.sh dist _stage/site && node scripts/check-routes.mjs _stage/site",
     "blog": "node tools/blog-manager/start.mjs",
-    "blog:smoke": "node tools/blog-manager/smoke.mjs"
+    "blog:smoke": "node tools/blog-manager/smoke.mjs",
+    "blog:ui-test": "node tools/blog-manager/ui-test.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
@@ -34,8 +35,8 @@
     "@lezer/highlight": "^1.2.5",
     "@lezer/markdown": "^1.8.0",
     "@tabler/icons": "^3.49.0",
-    "easymde": "^2.21.0",
     "esbuild": "^0.28.2",
+    "playwright-core": "^1.64.0",
     "yaml": "^2.9.1"
   }
 }
