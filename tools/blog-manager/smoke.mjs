@@ -197,6 +197,40 @@ async function serverTests() {
       assert.equal((await request(port, 'GET', '/..%2fpackage.json', {})).status, 404);
     });
 
+    await ok('/app.js serves the bundle, / sends a strict CSP', async () => {
+      const js = await request(port, 'GET', '/app.js');
+      assert.equal(js.status, 200);
+      assert.match(js.headers['content-type'], /^text\/javascript/);
+      assert.ok(js.raw.length > 0);
+      assert.equal((await request(port, 'GET', '/app.js', { headers: { Host: 'evil.example' } })).status, 403);
+      const csp = (await request(port, 'GET', '/')).headers['content-security-policy'];
+      for (const d of ["default-src 'self'", "script-src 'self'", "font-src 'self'", "connect-src 'self'", "object-src 'none'", "frame-ancestors 'none'"]) {
+        assert.ok(csp.includes(d), `CSP missing ${d}`);
+      }
+      assert.ok(!/script-src[^;]*unsafe/.test(csp), 'script-src must not allow unsafe');
+      assert.ok(!/https?:\/\/(?!(127\.0\.0\.1|localhost):)/.test(csp), 'no third-party origins');
+    });
+
+    await ok('/fonts serves only allowlisted woff2 files', async () => {
+      const f = await request(port, 'GET', '/fonts/poppins-latin-600-normal.woff2');
+      assert.equal(f.status, 200);
+      assert.equal(f.headers['content-type'], 'font/woff2');
+      assert.equal(f.raw.subarray(0, 4).toString('latin1'), 'wOF2');
+      assert.equal((await request(port, 'GET', '/fonts/inter-latin-wght-normal.woff2')).status, 200);
+      assert.equal((await request(port, 'GET', '/fonts/nope.woff2')).status, 404);
+      for (const bad of ['..%2fpackage.json', '..%2f..%2f..%2fpackage.json', '%2e%2e%2fpackage.json', '..%5cpackage.json', '../package.json', 'poppins-latin-600-normal.woff', 'poppins-latin-600-normal.woff2%00.png', 'Poppins.woff2', '.woff2', '']) {
+        const r = await request(port, 'GET', `/fonts/${bad}`);
+        assert.ok([400, 404].includes(r.status), `/fonts/${bad} -> ${r.status}`);
+      }
+    });
+
+    await ok('listing has description, updatedDate and words', async () => {
+      const item = (await jreq(port, 'GET', '/api/posts')).data.find((p) => p.slug === 'smoke-test');
+      assert.equal(item.description, 'new: desc');
+      assert.equal(item.words, 1);
+      assert.equal(item.updatedDate, null);
+    });
+
     await ok('cover must be a real image file in the post folder', async () => {
       const meta = (await jreq(port, 'GET', '/api/posts/smoke-test')).data.meta;
       const put = (cover) => jreq(port, 'PUT', '/api/posts/smoke-test', { meta: { ...meta, cover, coverAlt: 'alt' }, body: 'Hello\n' });

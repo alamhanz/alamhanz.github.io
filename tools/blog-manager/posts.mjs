@@ -130,20 +130,24 @@ export async function listPosts(root = getRoot()) {
     const slug = f.replace(/\.md$/, '');
     if (!f.endsWith('.md') || !SLUG_RE.test(slug)) continue;
     let meta;
+    let body = '';
     try {
-      ({ meta } = parse(await fs.readFile(path.join(dir, f), 'utf8')));
+      ({ meta, body } = parse(await fs.readFile(path.join(dir, f), 'utf8')));
       if (!meta || typeof meta !== 'object') meta = {};
     } catch (err) {
-      out.push({ slug, title: slug, pubDate: null, draft: false, tags: [], cover: null, error: `Unreadable front matter: ${String(err.message).split('\n')[0]}` });
+      out.push({ slug, title: slug, description: '', pubDate: null, updatedDate: null, draft: false, tags: [], cover: null, words: 0, error: `Unreadable front matter: ${String(err.message).split('\n')[0]}` });
       continue;
     }
     out.push({
       slug,
       title: meta.title ?? slug,
+      description: meta.description ?? '',
       pubDate: normDate(meta.pubDate) ?? null,
+      updatedDate: normDate(meta.updatedDate) ?? null,
       draft: meta.draft === true,
       tags: meta.tags ?? [],
       cover: meta.cover ?? null,
+      words: (body.match(/\S+/g) ?? []).length,
     });
   }
   return out.sort((a, b) => (b.pubDate ?? '9999').localeCompare(a.pubDate ?? '9999') || a.slug.localeCompare(b.slug));
