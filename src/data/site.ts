@@ -1,7 +1,7 @@
 export const site = {
   name: 'alamsyah hanza',
   title: 'Alamsyah Hanza | Data Scientist',
-  description: "It's me, Alamsyah: Data Scientist and BI Engineer, 10+ years in retail and logistics. Let's talk data.",
+  description: "Alamsyah Hanza: Data Scientist and BI Engineer, 10+ years optimizing retail and logistics with data. Let's talk data.",
   url: 'https://alamhanz.xyz',
   ogImage: '/images/hello3.jpg',
   cvUrl: 'https://drive.google.com/file/d/1dA-vUnT3LxRqYcfoD-YZQjdltTRyx8Gt/view?usp=sharing',

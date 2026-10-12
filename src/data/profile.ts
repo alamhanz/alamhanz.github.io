@@ -19,45 +19,54 @@ export interface SkillLogo {
   icon?: string;
 }
 
+const location = { current: 'Tokyo, Japan', origin: 'Indonesia' };
+const based = `${location.current} (originally from ${location.origin})`;
+
 export const profile = {
   name: 'Alamsyah Hanza',
+  location,
   headline: 'Data Scientist and BI Engineer, 10+ years in retail and logistics',
-  valueStatement: 'I use data to cut costs and speed up delivery in retail and logistics.',
+  valueStatement: 'Optimization through data: cutting costs and speeding up delivery in retail and logistics.',
   summary:
-    "I'm a data scientist who turns messy data into decisions a business can act on. I've worked at Amazon, Gojek and Roms, building models and reports that lower costs and improve key numbers. I also lead teams and run a data science community.",
+    "My work is optimization through data: turning messy data into decisions a business can act on. I've worked at Amazon, Gojek and Roms, building models and reports that lower costs and improve key numbers. I also lead teams and run a data science community.",
   metaDescription:
-    "Data scientist and BI engineer with 10+ years in retail and logistics. I turn messy data into decisions that cut costs, and I lead teams and a data science community.",
+    "Data scientist and BI engineer with 10+ years in retail and logistics. Optimization through data: modeling, statistics, pipelines and dashboards that cut costs and speed up delivery.",
   atAGlance: [
     { label: 'Experience', value: '10+ years' },
     { label: 'Industries', value: 'Retail, logistics, supply chain' },
     {
       label: 'Strengths',
-      value: 'Machine learning, data analysis, experiment (A/B) testing, dashboards and reporting',
+      value: 'Optimization, data modeling, statistics (A/B testing), ETL / data pipelines, dashboarding, data analysis & exploration',
     },
     { label: 'Now', value: 'Business Intelligence Engineer, Amazon (since April 2025)' },
+    { label: 'Based', value: based },
     { label: 'Education', value: "Bachelor's in Mathematics, Universitas Indonesia" },
     { label: 'Languages', value: 'Indonesian (native), English (intermediate)' },
   ],
   json: {
     now: 'Business Intelligence Engineer, Amazon',
+    based,
     before: 'Roms, Gojek',
     industries: 'Retail, logistics, supply chain',
-    strengths: 'Machine learning, data analysis, experiment (A/B) testing, dashboards and reporting',
+    strengths: 'Optimization, data modeling, statistics (A/B testing), ETL / data pipelines, dashboarding, data analysis & exploration',
     also: 'Leads teams and runs a data science community',
   },
   focus: [
-    { title: 'Where stock should sit', text: 'Inventory placement for faster same-day delivery.' },
-    { title: 'Predicting what happens next', text: 'Delivery times, demand and stock levels.' },
-    { title: 'Spotting fraud', text: 'Models that flag suspicious activity.' },
-    { title: 'Reports people actually use', text: 'Self-serve tools, KPI reports and dashboards for leaders.' },
+    { title: 'Optimizing stock placement', text: 'Deciding where inventory sits for faster same-day delivery.' },
+    { title: 'Cutting operating costs', text: 'Logistics and packing optimization with machine learning.' },
+    { title: 'Modeling what happens next', text: 'Delivery times, demand, stock levels and suspicious activity.' },
+    { title: 'Testing what works', text: 'Designing and reading A/B tests with product managers.' },
+    { title: 'Pipelines and dashboards', text: 'Scattered data brought together into self-serve tools and KPI reports.' },
+    { title: 'Analysis and exploration', text: 'Digging into products and customer segments to find what is worth acting on.' },
   ] satisfies TitledText[],
   problems: [
-    { title: 'Faster delivery', text: 'Planning where inventory is stored and predicting delivery times.' },
+    { title: 'Faster delivery', text: 'Optimizing where inventory is stored and predicting delivery times.' },
     { title: 'Lower operating costs', text: 'Logistics and packing optimization with machine learning.' },
-    { title: 'Forecasting', text: 'Demand and stock levels, so teams plan ahead instead of reacting.' },
-    { title: 'Fraud detection', text: 'Models that flag suspicious activity.' },
+    { title: 'Forecasting and fraud', text: 'Models for demand, stock levels and delivery times, and for flagging suspicious activity.' },
     { title: 'Experiments', text: 'Designing and reading A/B tests with product managers.' },
-    { title: 'Messy data to dashboards', text: 'Bringing scattered data together into self-serve tools and KPI reports.' },
+    { title: 'Messy data to pipelines', text: 'Bringing scattered data together with ETL, so teams work from one source.' },
+    { title: 'Dashboards that get used', text: 'Self-serve tools and KPI reports for leaders.' },
+    { title: 'Analysis and exploration', text: 'Analyzing products and building customer segments to see what is worth acting on.' },
     { title: 'Teams and community', text: 'Leading data science and BI teams, and running a data science community.' },
   ] satisfies TitledText[],
   cvNote: 'roles, projects and results, in one PDF',
@@ -109,12 +118,11 @@ export const profile = {
     },
   ] satisfies Experience[],
   skillGroups: [
-    {
-      title: 'modelling',
-      items: ['Python (advanced)', 'SQL (expert)', 'machine learning', 'experiment design', 'pandas', 'Jupyter'],
-    },
-    { title: 'data', items: ['ETL', 'Google Cloud', 'AWS', 'Docker', 'GitHub'] },
-    { title: 'bi', items: ['Tableau', 'Google Data Studio', 'Amazon QuickSight'] },
+    { title: 'optimization', items: ['inventory placement', 'logistics and packing', 'forecasting', 'machine learning'] },
+    { title: 'modelling + stats', items: ['Python (advanced)', 'machine learning', 'experiment design', 'pandas', 'Jupyter'] },
+    { title: 'data engineering', items: ['SQL (expert)', 'ETL', 'Google Cloud', 'AWS', 'Docker', 'GitHub'] },
+    { title: 'bi + dashboards', items: ['Tableau', 'Google Data Studio', 'Amazon QuickSight'] },
+    { title: 'analysis', items: ['data analysis', 'data exploration', 'customer segments'] },
     { title: 'people', items: ['stakeholder management', 'training and mentoring', 'project management'] },
   ],
   education: {

@@ -39,5 +39,5 @@ Astro 7 static site (v2, branch `v2` / `feat/v2-astro`; live `xyz` is still the 
 
 ## Conventions
 - Theme colors: body #F5F5F5, theme #30475E, selected-text #F05454, button #121212; Poppins for headings/UI, Inter for body
-- About page facts come only from the owner's CV; no phone/email/city on the public site
+- About page facts come only from the owner's CV (plus owner-approved location: Tokyo, Japan, originally from Indonesia); no phone/email on the public site
 - Unused v1 files kept on purpose in `legacy/` (old-lyceum.txt, source.txt, unused images)
