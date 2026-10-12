@@ -172,6 +172,7 @@
   }
 
   $('publish-btn').addEventListener('click', async () => {
+    if (!window.confirm(`Publish "${state.slug}"? This pushes branch post/${state.slug} and opens a pull request into xyz.`)) return;
     await save();
     const box = $('publish-result');
     const btn = $('publish-btn');
@@ -206,8 +207,12 @@
 
   $('unpublish-btn').addEventListener('click', async () => {
     await save();
-    await api(`/posts/${state.slug}/unpublish`, json('POST'));
-    await openPost(state.slug);
+    try {
+      await api(`/posts/${state.slug}/unpublish`, json('POST'));
+      await openPost(state.slug);
+    } catch (e) {
+      setSave(`Unpublish failed: ${e.message}`);
+    }
   });
 
   $('delete-btn').addEventListener('click', () => {
@@ -226,8 +231,14 @@
     const slug = state.slug;
     state.dirty = false;
     clearTimeout(state.timer);
-    await api(`/posts/${slug}`, { method: 'DELETE' });
+    try {
+      await api(`/posts/${slug}`, { method: 'DELETE' });
+    } catch (e) {
+      setSave(`Delete failed: ${e.message}`);
+      return;
+    }
     state.slug = null;
+    $('frame').src = 'about:blank';
     $('editor').hidden = true;
     $('preview').hidden = true;
     $('empty').hidden = false;
